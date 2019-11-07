@@ -1,0 +1,12 @@
+Library/
+Logs/
+Temp/
+UnityVS*
+Assembly*proj
+unity*.sln
+unity*.suo
+*.unitypackage
+
+*.csproj
+*.sln
+.vs/
