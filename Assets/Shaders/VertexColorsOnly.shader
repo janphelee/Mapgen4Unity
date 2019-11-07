@@ -3,10 +3,16 @@
 Shader "Custom/VertexColorsOnly"{
 	Properties{
 		_ColorMap("Color Map", 2D) = "blue" {}
+		_vertex_land("vertex_land", 2D) = "blue" {}
+		_vertex_depth("vertex_depth", 2D) = "blue" {}
+
 		_MountainHeight("Mountain Height", Range(50.0,250.0)) = 50.0
 
 		_outline_water("outline_water", Range(0.0,20.0)) = 10.0
-		
+		_outline_depth("outline_depth", Range(0.0,20.0)) = 1.0
+		_outline_strength("outline_strength", Range(0.0,30.0)) = 15.0
+		_outline_threshold("outline_threshold", Range(0.0,0.1)) = 0.0
+
 		_ambient("ambient", Range(0.0,1.0)) = 0.25
 
 		_light_angle_deg("light_angle_deg", Range(0,360)) = 80
@@ -15,7 +21,6 @@ Shader "Custom/VertexColorsOnly"{
 		_slope("slope", Range(0,1)) = 0.5
 		_flat("flat", Range(0,5)) = 2.5
 
-		_vertex_land("vertex_land", 2D) = "blue" {}
 	}
 	SubShader{
 		Tags { "RenderType" = "Opaque" "Queue" = "Geometry"}
@@ -28,9 +33,11 @@ Shader "Custom/VertexColorsOnly"{
 			#include "UnityCG.cginc"
 
 			sampler2D _ColorMap;
+			sampler2D _vertex_land;
+			sampler2D _vertex_depth;
+
 			float _MountainHeight;
 			float _outline_water;
-			sampler2D _vertex_land;
 
 			float _ambient;
 			float _overhead;
@@ -39,6 +46,10 @@ Shader "Custom/VertexColorsOnly"{
 			float _slope;
 			float _flat;
 
+			float _outline_depth;
+			float _outline_strength;
+			float _outline_threshold;
+
 			/**
 			 * v2f 结构说明
 			 * float4 pos:POSITION; 其中“POSITION”指定位置变量，而不是由“pos”指定
@@ -46,9 +57,10 @@ Shader "Custom/VertexColorsOnly"{
 			 * float2 em:TEXCOORD1; TEXCOORD1 指定纹理2坐标(不能定义成 em:TEXCOORD0，会跟uv值相同)
 			 */
 			struct v2f {
-				float4 pos:POSITION;
+				float4 pos:SV_POSITION;
 				float2 uv:TEXCOORD0;
 				float2 em:TEXCOORD1;
+				float4 screenPos:TEXCOORD2;
 			};
 
 			v2f vert(appdata_full v)
@@ -70,6 +82,7 @@ Shader "Custom/VertexColorsOnly"{
 				//uv.x = v_uv.y;
 				o.uv = uv;
 				o.em = em_xy;
+				o.screenPos = ComputeScreenPos (o.pos);
 				return o;
 			}
 
@@ -105,13 +118,30 @@ Shader "Custom/VertexColorsOnly"{
 				
 				float3 slope_vector = normalize(float3(zS-zN,zE-zW,_overhead*2.0*u_inverse_texture_size));
 				float3 light_vector = normalize(float3(angle(_light_angle_deg),lerp(_slope,_flat,slope_vector.z)));
-				
+				// 自定义灯光，使植被突出显示
 				float light = _ambient + max(0.0, dot(light_vector, slope_vector));
 
+				// 自定义深度，使山峰边缘突出显示
+				//float2 d_xy = (1.0 + IN.screenPos.xy/IN.screenPos.w)*0.5;
+				float2 d_xy = float2(IN.screenPos.xy/IN.screenPos.w);
+				//屏幕坐标 https://blog.csdn.net/h5502637/article/details/86743786
+				//Unity Shader中的ComputeScreenPos函数 https://www.jianshu.com/p/df878a386bec
+
+				float depth0 = decipher(tex2D(_vertex_depth, d_xy)),
+					  depth1 = max(max(decipher(tex2D(_vertex_depth, d_xy + _outline_depth*(-dy-dx))),
+									   decipher(tex2D(_vertex_depth, d_xy + _outline_depth*(-dy+dx)))),
+									   decipher(tex2D(_vertex_depth, d_xy + _outline_depth*(-dy)))),
+					  depth2 = max(max(decipher(tex2D(_vertex_depth, d_xy + _outline_depth*(dy-dx))),
+									   decipher(tex2D(_vertex_depth, d_xy + _outline_depth*(dy+dx)))),
+									   decipher(tex2D(_vertex_depth, d_xy + _outline_depth*(dy))));
+				float outline = 1.0 + _outline_strength * (max(_outline_threshold, depth1-depth0) - _outline_threshold);
+
+				// 植被颜色
 				uv.x = em.g;
 				float3 biome_color = tex2D(_ColorMap, uv).rgb ;
 
-				return float4(biome_color * light,1.0);
+				return float4(biome_color * light/outline,1.0);
+				//return tex2D(_vertex_depth, d_xy);
 			}
 
 			ENDCG

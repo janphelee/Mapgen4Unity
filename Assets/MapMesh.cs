@@ -14,6 +14,8 @@ namespace Assets.MapGen
         private Camera rtCamera;
         [SerializeField]
         private Texture2D landTexture;
+        //[SerializeField]
+        //private Texture2D depthTexture;
 
         private void Awake()
         {
@@ -21,7 +23,21 @@ namespace Assets.MapGen
             {
                 Shader.Find("Custom/VertexColorsOnly"),
                 Shader.Find("Custom/VertexLandOnly"),
+                Shader.Find("Custom/VertexDepthOnly"),
             };
+        }
+
+        private void LateUpdate()
+        {
+            if (Camera.current)
+            {
+                var targetTexture = rtCamera.targetTexture;
+                rtCamera.CopyFrom(Camera.current);
+                rtCamera.targetTexture = targetTexture;
+                rtCamera.RenderWithShader(shaders[2], "");
+
+                //readTargetTexture(rtCamera, depthTexture);
+            }
         }
 
         private void splitMesh(Vector3[] vertices, int[] triangles, Vector2[] uv)
@@ -114,9 +130,13 @@ namespace Assets.MapGen
 
             texture = ColorMap.texture();
             landTexture = renderTargetImage(rtCamera, shaders[1], string.Empty);
+            //depthTexture = new Texture2D(rtCamera.targetTexture.width, rtCamera.targetTexture.height);
+            //depthTexture.filterMode = FilterMode.Point;
+            //depthTexture.wrapMode = TextureWrapMode.Clamp;
 
             setTexture("_ColorMap", texture);
             setTexture("_vertex_land", landTexture);
+            setTexture("_vertex_depth", rtCamera.targetTexture);
         }
 
         public void setMountainHeight(float mountain_height)
@@ -125,6 +145,16 @@ namespace Assets.MapGen
             {
                 render.material.SetFloat("_MountainHeight", mountain_height);
             }
+        }
+
+        public void readTargetTexture(Camera camera, Texture2D output)
+        {
+            var currentRT = RenderTexture.active;
+            RenderTexture.active = camera.targetTexture;
+            output.ReadPixels(new Rect(0, 0, camera.targetTexture.width, camera.targetTexture.height), 0, 0);
+            output.Apply();
+
+            RenderTexture.active = currentRT;
         }
 
         // Take a "screenshot" of a camera's Render Texture.
