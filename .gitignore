@@ -1,5 +1,6 @@
 Library/
 Logs/
+obj/
 Temp/
 UnityVS*
 Assembly*proj
@@ -10,3 +11,4 @@ unity*.suo
 *.csproj
 *.sln
 .vs/
+/ProjectSettings/ProjectVersion.txt
