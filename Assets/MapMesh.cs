@@ -28,32 +28,34 @@ namespace Assets.MapGen
             };
         }
 
-        private int camW { get; set; }
-        private int camH { get; set; }
+        public int camW;
+        public int camH;
+        public float aspect;
 
-        //private void LateUpdate()
-        //{
-        //    if (Camera.current)
-        //    {
-        //        if (camW != Camera.current.pixelWidth || camH != Camera.current.pixelHeight)
-        //        {
-        //            camW = Camera.current.pixelWidth;
-        //            camH = Camera.current.pixelHeight;
-        //            depthTexture = new RenderTexture(2048, 2048 * camH / camW, 16);
-        //            //depthTexture.filterMode = FilterMode.Point;
-        //            depthTexture.wrapMode = TextureWrapMode.Clamp;
+        private void LateUpdate()
+        {
+            if (Camera.current)
+            {
+                if (camW != Camera.current.pixelWidth || camH != Camera.current.pixelHeight)
+                {
+                    camW = Camera.current.pixelWidth;
+                    camH = Camera.current.pixelHeight;
+                    aspect = Camera.current.aspect;
+                    //depthTexture = new RenderTexture(2048, 2048 * camH / camW, 16);
+                    ////depthTexture.filterMode = FilterMode.Point;
+                    //depthTexture.wrapMode = TextureWrapMode.Clamp;
 
-        //            setTexture("_vertex_depth", depthTexture);
-        //        }
-        //        //var targetTexture = rtCamera.targetTexture;
-        //        rtCamera.CopyFrom(Camera.current);
-        //        rtCamera.targetTexture = depthTexture;
-        //        rtCamera.RenderWithShader(shaders[2], "");
+                    //setTexture("_vertex_depth", depthTexture);
+                }
+                //var targetTexture = rtCamera.targetTexture;
+                rtCamera.CopyFrom(Camera.current);
+                //rtCamera.targetTexture = targetTexture;
+                //rtCamera.RenderWithShader(shaders[2], "");
 
-        //        //readTargetTexture(rtCamera, depthTexture);
-        //    }
+                ////readTargetTexture(rtCamera, depthTexture);
+            }
 
-        //}
+        }
 
         private void splitMesh(Vector3[] vertices, int[] triangles, Vector2[] uv)
         {

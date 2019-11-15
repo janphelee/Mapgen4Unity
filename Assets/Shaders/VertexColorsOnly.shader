@@ -8,9 +8,9 @@ Shader "Custom/VertexColorsOnly"{
 		_MountainHeight("Mountain Height", Range(0.0,250.0)) = 50.0
 
 		_outline_water("outline_water", Range(0.0,20.0)) = 10.0
-		_outline_depth("outline_depth", Range(0.0,20.0)) = 10.0
+		_outline_depth("outline_depth", Range(0.0,2.0)) = 1.0
 		_outline_strength("outline_strength", Range(0.0,30.0)) = 15.0
-		_outline_threshold("outline_threshold", Range(0.0,0.1)) = 0.0
+		_outline_threshold("outline_threshold", Range(0.0,100.0)) = 0.0
 
 		_ambient("ambient", Range(0.0,1.0)) = 0.25
 
@@ -64,8 +64,8 @@ Shader "Custom/VertexColorsOnly"{
 
 			ENDCG
 		}
-
 		GrabPass{"_vertex_depth"}
+
 		pass {
 			CGPROGRAM
 			#pragma vertex vert 
@@ -168,6 +168,9 @@ Shader "Custom/VertexColorsOnly"{
 				float2 d_xy = IN.screenPos.xy/IN.screenPos.w;
 				//屏幕坐标 https://blog.csdn.net/h5502637/article/details/86743786
 				//Unity Shader中的ComputeScreenPos函数 https://www.jianshu.com/p/df878a386bec
+
+				_outline_depth = _outline_depth * 5.0*100.0/unity_OrthoParams.y;
+				_outline_threshold /= 1000.0;
 
 				float depth0 = decipher(tex2D(_vertex_depth, d_xy)),
 					  depth1 = max(max(decipher(tex2D(_vertex_depth, d_xy + _outline_depth*(-dy-dx))),
