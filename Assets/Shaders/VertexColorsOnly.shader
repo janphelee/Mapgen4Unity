@@ -114,6 +114,8 @@ Shader "Custom/VertexColorsOnly"{
 				em_xy.y = 1.0 - em_xy.y;//渲染后的纹理Y轴坐标系对调
 
 				pos = float4(UnityObjectToViewPos(pos),1);
+				// unity观察系的z方向，unity观察系是右手系，
+				// 其他都是本地坐标，世界坐标，投影坐标都是左手系，所以观察系轴反向
 				pos += float4(0,max(uv.x, 0.0)*_MountainHeight,-pos.y,1);//增加深度-pos.y，越靠近屏幕下方越后渲染
 				o.pos = UnityViewToClipPos(pos);
 				///////////////////////////////////////////////////
@@ -188,8 +190,8 @@ Shader "Custom/VertexColorsOnly"{
 				//return float4(biome_color * light/outline,1.0);
 				//return float4(0,tex2D(_vertex_depth, d_xy).g,0,1.0);
 				//return float4(0,floor(256.0*IN.uv.x)/256.0,0,1);
-				//return float4(biome_color/outline,1);
-				return float4(float3(1,1,1)/outline,1);
+				return float4(biome_color/outline,1);
+				//return float4(float3(1,1,1)/outline,1);
 			}
 
 			ENDCG

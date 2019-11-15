@@ -122,9 +122,13 @@ namespace Assets.MapGen
             renderers.Add(render);
         }
 
-        private void setTexture(string name, Texture value)
+        public void setTexture(string name, Texture value)
         {
             foreach (var r in renderers) r.material.SetTexture(name, value);
+        }
+        public void SetFloat(string name, float value)
+        {
+            foreach (var r in renderers) r.material.SetFloat(name, value);
         }
 
         public void setup(MeshData mesh, int[] peaks_t, float spacing, int mountain_height = 50)
