@@ -6,10 +6,10 @@ Shader "Custom/VertexColorsOnly"{
 		_vertex_land("vertex_land", 2D) = "blue" {}
 		_vertex_depth("vertex_depth", 2D) = "blue" {}
 
-		_MountainHeight("Mountain Height", Range(50.0,250.0)) = 50.0
+		_MountainHeight("Mountain Height", Range(0.0,250.0)) = 50.0
 
 		_outline_water("outline_water", Range(0.0,20.0)) = 10.0
-		_outline_depth("outline_depth", Range(0.0,20.0)) = 1.0
+		_outline_depth("outline_depth", Range(0.0,20.0)) = 10.0
 		_outline_strength("outline_strength", Range(0.0,30.0)) = 15.0
 		_outline_threshold("outline_threshold", Range(0.0,0.1)) = 0.0
 
@@ -70,12 +70,13 @@ Shader "Custom/VertexColorsOnly"{
 				float2 uv = v.texcoord.xy;
 				float4 pos = v.vertex;
 
-				pos.z = max(uv.x, 0.0) * _MountainHeight;
-				o.pos = UnityObjectToClipPos(pos);
-				///////////////////////////////////////////////////
-
 				float2 em_xy = pos.xy / 1000.0;
 				em_xy.y = 1.0 - em_xy.y;//渲染后的纹理Y轴坐标系对调
+
+				pos = float4(UnityObjectToViewPos(pos),1);
+				pos += float4(0,max(uv.x, 0.0)*_MountainHeight,-pos.y,1);//增加深度-pos.y，越靠近屏幕下方越后渲染
+				o.pos = UnityViewToClipPos(pos);
+				///////////////////////////////////////////////////
 
 				//float2 dx = float2(u_inverse_texture_size, 0),
 				//	   dy = float2(0, u_inverse_texture_size);
@@ -86,12 +87,11 @@ Shader "Custom/VertexColorsOnly"{
 				return o;
 			}
 
-			//为什么用dot函数不行，不知道
-			//const float2 _decipher = float2(1.0/256.0, 1.0);
 			float decipher(float4 v) {
 				// cg shader frag不能用外部变量?
-				const float2 _decipher = float2(1.0/256.0, 1.0);
-				return dot(_decipher, v.xy);
+				//const float2 _decipher = float2(1.0/256.0, 1.0);
+				//return dot(_decipher, v.xy);
+				return v.y;
 			}
 			float2 angle(float deg){
 				float Deg2Rad = 0.0174532924;
@@ -121,9 +121,11 @@ Shader "Custom/VertexColorsOnly"{
 				// 自定义灯光，使植被突出显示
 				float light = _ambient + max(0.0, dot(light_vector, slope_vector));
 
+				float aspect = _ScreenParams.x/_ScreenParams.y;
+				//dx *= aspect;
+				//dy /= aspect;
 				// 自定义深度，使山峰边缘突出显示
-				//float2 d_xy = (1.0 + IN.screenPos.xy/IN.screenPos.w)*0.5;
-				float2 d_xy = float2(IN.screenPos.xy/IN.screenPos.w);
+				float2 d_xy = IN.screenPos.xy/IN.screenPos.w;
 				//屏幕坐标 https://blog.csdn.net/h5502637/article/details/86743786
 				//Unity Shader中的ComputeScreenPos函数 https://www.jianshu.com/p/df878a386bec
 
@@ -134,14 +136,17 @@ Shader "Custom/VertexColorsOnly"{
 					  depth2 = max(max(decipher(tex2D(_vertex_depth, d_xy + _outline_depth*(dy-dx))),
 									   decipher(tex2D(_vertex_depth, d_xy + _outline_depth*(dy+dx)))),
 									   decipher(tex2D(_vertex_depth, d_xy + _outline_depth*(dy))));
-				float outline = 1.0 + _outline_strength * (max(_outline_threshold, depth1-depth0) - _outline_threshold);
+				float outline = 1.0 + _outline_strength * (max(_outline_threshold, depth2-depth0) - _outline_threshold);
 
 				// 植被颜色
 				uv.x = em.g;
 				float3 biome_color = tex2D(_ColorMap, uv).rgb ;
 
-				return float4(biome_color * light/outline,1.0);
-				//return tex2D(_vertex_depth, d_xy);
+				//return float4(biome_color * light/outline,1.0);
+				//return float4(0,tex2D(_vertex_depth, d_xy).g,0,1.0);
+				//return float4(0,floor(256.0*IN.uv.x)/256.0,0,1);
+				//return float4(biome_color/outline,1);
+				return float4(float3(1,1,1)/outline,1);
 			}
 
 			ENDCG

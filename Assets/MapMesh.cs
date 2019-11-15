@@ -14,8 +14,9 @@ namespace Assets.MapGen
         private Camera rtCamera;
         [SerializeField]
         private Texture2D landTexture;
-        //[SerializeField]
-        //private Texture2D depthTexture;
+
+        [SerializeField]
+        private RenderTexture depthTexture;
 
         private void Awake()
         {
@@ -27,17 +28,31 @@ namespace Assets.MapGen
             };
         }
 
+        private int camW { get; set; }
+        private int camH { get; set; }
+
         private void LateUpdate()
         {
             if (Camera.current)
             {
-                var targetTexture = rtCamera.targetTexture;
+                if (camW != Camera.current.pixelWidth || camH != Camera.current.pixelHeight)
+                {
+                    camW = Camera.current.pixelWidth;
+                    camH = Camera.current.pixelHeight;
+                    depthTexture = new RenderTexture(2048, 2048 * camH / camW, 16);
+                    //depthTexture.filterMode = FilterMode.Point;
+                    depthTexture.wrapMode = TextureWrapMode.Clamp;
+
+                    setTexture("_vertex_depth", depthTexture);
+                }
+                //var targetTexture = rtCamera.targetTexture;
                 rtCamera.CopyFrom(Camera.current);
-                rtCamera.targetTexture = targetTexture;
+                rtCamera.targetTexture = depthTexture;
                 rtCamera.RenderWithShader(shaders[2], "");
 
                 //readTargetTexture(rtCamera, depthTexture);
             }
+
         }
 
         private void splitMesh(Vector3[] vertices, int[] triangles, Vector2[] uv)
@@ -130,13 +145,9 @@ namespace Assets.MapGen
 
             texture = ColorMap.texture();
             landTexture = renderTargetImage(rtCamera, shaders[1], string.Empty);
-            //depthTexture = new Texture2D(rtCamera.targetTexture.width, rtCamera.targetTexture.height);
-            //depthTexture.filterMode = FilterMode.Point;
-            //depthTexture.wrapMode = TextureWrapMode.Clamp;
 
             setTexture("_ColorMap", texture);
             setTexture("_vertex_land", landTexture);
-            setTexture("_vertex_depth", rtCamera.targetTexture);
         }
 
         public void setMountainHeight(float mountain_height)

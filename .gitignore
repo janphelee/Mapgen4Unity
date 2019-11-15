@@ -9,6 +9,12 @@ unity*.suo
 *.unitypackage
 
 *.csproj
+*.csproj.user
 *.sln
 .vs/
 /ProjectSettings/ProjectVersion.txt
+/截图
+/Assets/Shaders/*.gl
+/Assets/Shaders/*.gl.meta
+/Assets/Shaders/*.bak
+/Assets/Shaders/*.bak.meta

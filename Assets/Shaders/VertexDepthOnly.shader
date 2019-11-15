@@ -2,6 +2,7 @@
 
 Shader "Custom/VertexDepthOnly"{
 	Properties{
+		_MountainHeight("Mountain Height", Range(50.0,250.0)) = 50.0
 	}
 	SubShader{
 		Tags { "RenderType" = "Opaque" "Queue" = "Geometry"}
@@ -14,6 +15,8 @@ Shader "Custom/VertexDepthOnly"{
 			#pragma fragment frag
 			#include "UnityCG.cginc"
 
+			float _MountainHeight;
+
 			struct v2f {
 				float4 pos:POSITION;
 				float2 uv:TEXCOORD0;
@@ -21,11 +24,16 @@ Shader "Custom/VertexDepthOnly"{
 
 			v2f vert(appdata_full v)
 			{
+				v2f o;
+
 				float2 uv = v.texcoord.xy;
 				float4 pos = v.vertex;
 
-				v2f o;
-				o.pos = UnityObjectToClipPos(pos);
+				
+				pos = float4(UnityObjectToViewPos(pos),1);
+				pos += float4(0,max(uv.x, 0.0)*_MountainHeight,-pos.y,1);
+				o.pos = UnityViewToClipPos(pos);
+
 				o.uv = uv;
 
 				return o;
