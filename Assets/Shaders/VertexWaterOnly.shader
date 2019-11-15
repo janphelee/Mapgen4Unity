@@ -1,6 +1,6 @@
 ﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
 
-Shader "Custom/VertexDepthOnly"{
+Shader "Custom/VertexWaterOnly"{
 	Properties{
 		_MountainHeight("Mountain Height", Range(50.0,250.0)) = 50.0
 	}

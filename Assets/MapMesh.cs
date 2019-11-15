@@ -11,9 +11,11 @@ namespace Assets.MapGen
 
         private List<MeshRenderer> renderers = new List<MeshRenderer>();
         [SerializeField]
-        private Camera rtCamera;
+        private Camera rtCamera = null;
         [SerializeField]
         private Texture2D landTexture;
+        [SerializeField]
+        private Texture2D waterTexture;
 
         [SerializeField]
         private RenderTexture depthTexture;
@@ -24,7 +26,7 @@ namespace Assets.MapGen
             {
                 Shader.Find("Custom/VertexColorsOnly"),
                 Shader.Find("Custom/VertexLandOnly"),
-                Shader.Find("Custom/VertexDepthOnly"),
+                Shader.Find("Custom/VertexWaterOnly"),
             };
         }
 
@@ -151,9 +153,11 @@ namespace Assets.MapGen
 
             texture = ColorMap.texture();
             landTexture = renderTargetImage(rtCamera, shaders[1], string.Empty);
+            waterTexture = renderTargetImage(rtCamera, shaders[2], string.Empty);
 
             setTexture("_ColorMap", texture);
             setTexture("_vertex_land", landTexture);
+            setTexture("_vertex_water", waterTexture);
         }
 
         public void setMountainHeight(float mountain_height)

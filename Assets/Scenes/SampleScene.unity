@@ -147,6 +147,7 @@ MonoBehaviour:
   depthTexture: {fileID: 0}
   camW: 0
   camH: 0
+  aspect: 0
 --- !u!4 &624059199
 Transform:
   m_ObjectHideFlags: 0

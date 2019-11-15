@@ -4,6 +4,7 @@ Shader "Custom/VertexColorsOnly"{
 	Properties{
 		_ColorMap("Color Map", 2D) = "blue" {}
 		_vertex_land("vertex_land", 2D) = "blue" {}
+		_vertex_water("vertex_water", 2D) = "blue" {}
 
 		_MountainHeight("Mountain Height", Range(0.0,250.0)) = 50.0
 
@@ -74,6 +75,8 @@ Shader "Custom/VertexColorsOnly"{
 
 			sampler2D _ColorMap;
 			sampler2D _vertex_land;
+			sampler2D _vertex_water;
+
 			sampler2D _vertex_depth;
 
 			float _MountainHeight;
@@ -154,8 +157,8 @@ Shader "Custom/VertexColorsOnly"{
 					   dy = float2(0,-u_inverse_texture_size);
 
 				float zE = decipher(tex2D(_vertex_land, em_xy+dx));
-				float zW = decipher(tex2D(_vertex_land, em_xy-dx));
 				float zN = decipher(tex2D(_vertex_land, em_xy-dy));
+				float zW = decipher(tex2D(_vertex_land, em_xy-dx));
 				float zS = decipher(tex2D(_vertex_land, em_xy+dy));
 				
 				float3 slope_vector = normalize(float3(zS-zN,zE-zW,_overhead*2.0*u_inverse_texture_size));
@@ -163,13 +166,11 @@ Shader "Custom/VertexColorsOnly"{
 				// 自定义灯光，使植被突出显示
 				float light = _ambient + max(0.0, dot(light_vector, slope_vector));
 
-				float aspect = _ScreenParams.x/_ScreenParams.y;
-				//dx *= aspect;
-				//dy /= aspect;
 				// 自定义深度，使山峰边缘突出显示
 				float2 d_xy = IN.screenPos.xy/IN.screenPos.w;
-				//屏幕坐标 https://blog.csdn.net/h5502637/article/details/86743786
-				//Unity Shader中的ComputeScreenPos函数 https://www.jianshu.com/p/df878a386bec
+				// 我用GrabPass纹理大小为窗口大小，mapgen4贴图大小2048x2048
+				//dx = dx*_ScreenParams.x/2048.0;
+				//dy = dy*_ScreenParams.y/2048.0;
 
 				_outline_depth = _outline_depth * 5.0*100.0/unity_OrthoParams.y;
 				_outline_threshold /= 1000.0;
