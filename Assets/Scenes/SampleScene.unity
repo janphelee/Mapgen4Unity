@@ -144,7 +144,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rtCamera: {fileID: 2105588851}
   landTexture: {fileID: 0}
-  depthTexture: {fileID: 0}
+  waterTexture: {fileID: 0}
+  riverBitmap: {fileID: 2800000, guid: ce16f3d170dad474885d3caf2b622cac, type: 3}
+  waterImage: {fileID: 0}
   camW: 0
   camH: 0
   aspect: 0

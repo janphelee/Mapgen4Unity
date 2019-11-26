@@ -8,10 +8,11 @@ Shader "Custom/VertexColorsOnly"{
 
 		_MountainHeight("Mountain Height", Range(0.0,250.0)) = 50.0
 
-		_outline_water("outline_water", Range(0.0,20.0)) = 10.0
 		_outline_depth("outline_depth", Range(0.0,2.0)) = 1.0
 		_outline_strength("outline_strength", Range(0.0,30.0)) = 15.0
 		_outline_threshold("outline_threshold", Range(0.0,100.0)) = 0.0
+		_outline_coast("outline_coast", Range(0,1)) = 0.0
+		_outline_water("outline_water", Range(0.0,20.0)) = 10.0
 
 		_ambient("ambient", Range(0.0,1.0)) = 0.25
 
@@ -20,6 +21,8 @@ Shader "Custom/VertexColorsOnly"{
 		_overhead("overhead", Range(0,60)) = 30.0
 		_slope("slope", Range(0,1)) = 0.5
 		_flat("flat", Range(0,5)) = 2.5
+
+		_biome_colors("biome_colors", Range(0,1)) = 1.0
 
 	}
 	SubShader{
@@ -73,14 +76,13 @@ Shader "Custom/VertexColorsOnly"{
 			#pragma fragment frag
 			#include "UnityCG.cginc"
 
-			sampler2D _ColorMap;
-			sampler2D _vertex_land;
-			sampler2D _vertex_water;
+			sampler2D _ColorMap;//u_colormap
+			sampler2D _vertex_land;//u_mapdata
+			sampler2D _vertex_water;//u_water
 
 			sampler2D _vertex_depth;
 
 			float _MountainHeight;
-			float _outline_water;
 
 			float _ambient;
 			float _overhead;
@@ -92,6 +94,10 @@ Shader "Custom/VertexColorsOnly"{
 			float _outline_depth;
 			float _outline_strength;
 			float _outline_threshold;
+			float _outline_coast;
+			float _outline_water;
+
+			float _biome_colors;
 
 			/**
 			 * v2f 结构说明
@@ -101,42 +107,39 @@ Shader "Custom/VertexColorsOnly"{
 			 */
 			struct v2f {
 				float4 pos:SV_POSITION;
-				float2 uv:TEXCOORD0;
-				float2 em:TEXCOORD1;
-				float4 screenPos:TEXCOORD2;
+				float2 v_uv:TEXCOORD0;
+				float2 v_em:TEXCOORD1;
+				float4 v_xy:TEXCOORD2;
 			};
 
 			v2f vert(appdata_full v)
 			{
+				float4 a_xy = v.vertex;
+				float2 a_em = v.texcoord.xy;
+
 				v2f o;
 
-				float2 uv = v.texcoord.xy;
-				float4 pos = v.vertex;
+				o.v_uv = a_xy.xy / 1000.0;
+				o.v_uv.y = 1.0 - o.v_uv.y;//渲染后的纹理Y轴坐标系对调
 
-				float2 em_xy = pos.xy / 1000.0;
-				em_xy.y = 1.0 - em_xy.y;//渲染后的纹理Y轴坐标系对调
-
-				pos = float4(UnityObjectToViewPos(pos),1);
+				a_xy = float4(UnityObjectToViewPos(a_xy),1);
 				// unity观察系的z方向，unity观察系是右手系，
 				// 其他都是本地坐标，世界坐标，投影坐标都是左手系，所以观察系轴反向
-				pos += float4(0,max(uv.x, 0.0)*_MountainHeight,-pos.y,1);//增加深度-pos.y，越靠近屏幕下方越后渲染
-				o.pos = UnityViewToClipPos(pos);
+				a_xy += float4(0,max(a_em.x, 0.0)*_MountainHeight,-a_xy.y,1);//增加深度-a_xy.y，越靠近屏幕下方越后渲染
+				o.pos = UnityViewToClipPos(a_xy);
 				///////////////////////////////////////////////////
 
-				//float2 dx = float2(u_inverse_texture_size, 0),
-				//	   dy = float2(0, u_inverse_texture_size);
-				//uv.x = v_uv.y;
-				o.uv = uv;
-				o.em = em_xy;
-				o.screenPos = ComputeScreenPos (o.pos);
+				o.v_em = a_em;
+				o.v_xy = ComputeScreenPos(o.pos);
+
 				return o;
 			}
 
 			float decipher(float4 v) {
 				// cg shader frag不能用外部变量?
-				//const float2 _decipher = float2(1.0/256.0, 1.0);
-				//return dot(_decipher, v.xy);
-				return v.y;
+				const float2 _decipher = float2(1.0/256.0, 1.0);
+				return dot(_decipher, v.xy);
+				//return v.y;
 			}
 			float2 angle(float deg){
 				float Deg2Rad = 0.0174532924;
@@ -145,29 +148,47 @@ Shader "Custom/VertexColorsOnly"{
 			
 			fixed4 frag(v2f IN) :COLOR
 			{
+				float2 v_uv = IN.v_uv;
+				float2 v_em = IN.v_em;
+				float2 v_xy = IN.v_xy.xy/IN.v_xy.w;
+				
+				float3 neutral_land_biome = float3(0.9,0.8,0.7);
+				float3 neutral_water_biome = 0.8*neutral_land_biome;
+
 				float u_inverse_texture_size = 1.5 / 2048.0;
 				//float2 sample_offset = float2(0.5*u_inverse_texture_size, 0.5*u_inverse_texture_size);
 				float2 sample_offset = float2(0.5*u_inverse_texture_size, -0.5*u_inverse_texture_size);
-
-				float2 uv = IN.uv;//color map
-				float2 em_xy = IN.em + sample_offset;//land texture
-				float4 em = tex2D(_vertex_land, em_xy).rgba;
+				float2 pos = v_uv + sample_offset;
 
 				float2 dx = float2(u_inverse_texture_size, 0),
 					   dy = float2(0,-u_inverse_texture_size);
 
-				float zE = decipher(tex2D(_vertex_land, em_xy+dx));
-				float zN = decipher(tex2D(_vertex_land, em_xy-dy));
-				float zW = decipher(tex2D(_vertex_land, em_xy-dx));
-				float zS = decipher(tex2D(_vertex_land, em_xy+dy));
-				
+				float zE = decipher(tex2D(_vertex_land, pos+dx));
+				float zN = decipher(tex2D(_vertex_land, pos-dy));
+				float zW = decipher(tex2D(_vertex_land, pos-dx));
+				float zS = decipher(tex2D(_vertex_land, pos+dy));
 				float3 slope_vector = normalize(float3(zS-zN,zE-zW,_overhead*2.0*u_inverse_texture_size));
 				float3 light_vector = normalize(float3(angle(_light_angle_deg),lerp(_slope,_flat,slope_vector.z)));
 				// 自定义灯光，使植被突出显示
 				float light = _ambient + max(0.0, dot(light_vector, slope_vector));
 
+				
+				float2 em = tex2D(_vertex_land, pos).yz;
+				//em.y = v_em.y;
+				
+				float3 neutral_biome_color = neutral_land_biome;
+				// 河水流域
+				float4 water_color = tex2D(_vertex_water, pos);
+				//if(em.x >= 0.5){ em.x -= _outline_water/256.0*(1.0-water_color.a); }
+				//if(em.x < 0.5){water_color.a = 0.0; neutral_biome_color = neutral_water_biome;}
+				water_color = lerp(float4(neutral_water_biome*(1.2-water_color.a),water_color.a),water_color, _biome_colors);
+				
+				// 植被颜色
+				float3 biome_color = tex2D(_ColorMap, em).rgb;
+				//biome_color = lerp(neutral_biome_color, biome_color, _biome_colors);
+
+
 				// 自定义深度，使山峰边缘突出显示
-				float2 d_xy = IN.screenPos.xy/IN.screenPos.w;
 				// 我用GrabPass纹理大小为窗口大小，mapgen4贴图大小2048x2048
 				//dx = dx*_ScreenParams.x/2048.0;
 				//dy = dy*_ScreenParams.y/2048.0;
@@ -175,24 +196,33 @@ Shader "Custom/VertexColorsOnly"{
 				_outline_depth = _outline_depth * 5.0*100.0/unity_OrthoParams.y;
 				_outline_threshold /= 1000.0;
 
-				float depth0 = decipher(tex2D(_vertex_depth, d_xy)),
-					  depth1 = max(max(decipher(tex2D(_vertex_depth, d_xy + _outline_depth*(-dy-dx))),
-									   decipher(tex2D(_vertex_depth, d_xy + _outline_depth*(-dy+dx)))),
-									   decipher(tex2D(_vertex_depth, d_xy + _outline_depth*(-dy)))),
-					  depth2 = max(max(decipher(tex2D(_vertex_depth, d_xy + _outline_depth*(dy-dx))),
-									   decipher(tex2D(_vertex_depth, d_xy + _outline_depth*(dy+dx)))),
-									   decipher(tex2D(_vertex_depth, d_xy + _outline_depth*(dy))));
+				float depth0 = decipher(tex2D(_vertex_depth, v_xy)),
+					  depth1 = max(max(decipher(tex2D(_vertex_depth, v_xy + _outline_depth*(-dy-dx))),
+									   decipher(tex2D(_vertex_depth, v_xy + _outline_depth*(-dy+dx)))),
+									   decipher(tex2D(_vertex_depth, v_xy + _outline_depth*(-dy)))),
+					  depth2 = max(max(decipher(tex2D(_vertex_depth, v_xy + _outline_depth*(dy-dx))),
+									   decipher(tex2D(_vertex_depth, v_xy + _outline_depth*(dy+dx)))),
+									   decipher(tex2D(_vertex_depth, v_xy + _outline_depth*(dy))));
 				float outline = 1.0 + _outline_strength * (max(_outline_threshold, depth2-depth0) - _outline_threshold);
 
-				// 植被颜色
-				uv.x = em.g;
-				float3 biome_color = tex2D(_ColorMap, uv).rgb ;
+				float neighboring_river = max(
+					max(
+						tex2D(_vertex_water, pos + _outline_depth*dx).a,
+						tex2D(_vertex_water, pos - _outline_depth*dx).a
+					),
+					max(
+						tex2D(_vertex_water, pos + _outline_depth*dy).a,
+						tex2D(_vertex_water, pos - _outline_depth*dy).a
+					)
+				);
+				if(em.x <= 0.5 && max(depth1, depth2) > 1.0/256.0 && neighboring_river <= 0.2){
+					outline += _outline_coast * 256.0 * (max(depth1, depth2) - 2.0*(em.x - 0.5));
+				}
 
-				//return float4(biome_color * light/outline,1.0);
-				//return float4(0,tex2D(_vertex_depth, d_xy).g,0,1.0);
-				//return float4(0,floor(256.0*IN.uv.x)/256.0,0,1);
-				return float4(biome_color/outline,1);
-				//return float4(float3(1,1,1)/outline,1);
+				//return float4( lerp(biome_color,water_color.rgb,water_color.a)*light/outline,1);
+				//return float4( lerp(biome_color,water_color.rgb,water_color.a)/outline,1);
+				//return float4( lerp(biome_color,water_color.rgb,water_color.a),1);
+				return float4(biome_color,1);
 			}
 
 			ENDCG
