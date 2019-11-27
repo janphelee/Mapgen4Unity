@@ -174,18 +174,18 @@ Shader "Custom/VertexColorsOnly"{
 
 				
 				float2 em = tex2D(_vertex_land, pos).yz;
-				//em.y = v_em.y;
+				em.y = v_em.y;
 				
 				float3 neutral_biome_color = neutral_land_biome;
 				// 河水流域
 				float4 water_color = tex2D(_vertex_water, pos);
-				//if(em.x >= 0.5){ em.x -= _outline_water/256.0*(1.0-water_color.a); }
-				//if(em.x < 0.5){water_color.a = 0.0; neutral_biome_color = neutral_water_biome;}
+				if(em.x >= 0.5){ em.x -= _outline_water/256.0*(1.0-water_color.a); }
+				if(em.x < 0.5){water_color.a = 0.0; neutral_biome_color = neutral_water_biome;}
 				water_color = lerp(float4(neutral_water_biome*(1.2-water_color.a),water_color.a),water_color, _biome_colors);
 				
 				// 植被颜色
 				float3 biome_color = tex2D(_ColorMap, em).rgb;
-				//biome_color = lerp(neutral_biome_color, biome_color, _biome_colors);
+				biome_color = lerp(neutral_biome_color, biome_color, _biome_colors);
 
 
 				// 自定义深度，使山峰边缘突出显示
@@ -215,14 +215,15 @@ Shader "Custom/VertexColorsOnly"{
 						tex2D(_vertex_water, pos - _outline_depth*dy).a
 					)
 				);
-				if(em.x <= 0.5 && max(depth1, depth2) > 1.0/256.0 && neighboring_river <= 0.2){
-					outline += _outline_coast * 256.0 * (max(depth1, depth2) - 2.0*(em.x - 0.5));
-				}
+				//if(em.x <= 0.5 && max(depth1, depth2) > 1.0/256.0 && neighboring_river <= 0.2){
+				//	outline += _outline_coast * 256.0 * (max(depth1, depth2) - 2.0*(em.x - 0.5));
+				//}
 
 				//return float4( lerp(biome_color,water_color.rgb,water_color.a)*light/outline,1);
-				//return float4( lerp(biome_color,water_color.rgb,water_color.a)/outline,1);
+				return float4(lerp(biome_color,water_color.rgb,water_color.a)/outline,1);
 				//return float4( lerp(biome_color,water_color.rgb,water_color.a),1);
-				return float4(biome_color,1);
+				//return float4(biome_color,1);
+				//return water_color;
 			}
 
 			ENDCG

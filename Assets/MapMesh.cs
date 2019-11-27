@@ -91,7 +91,7 @@ namespace Assets.MapGen
                 var ret = MeshSplit.createMeshRender(meshs, this.transform, shaders[2], "river");
 
                 foreach (var r in ret) r.material.SetTexture("_rivertexturemap", riverBitmap);
-                waterTexture = renderTargetImage(rtCamera, shaders[2], string.Empty);
+                waterTexture = renderTargetImage(rtCamera, shaders[2], string.Empty, FilterMode.Bilinear, TextureWrapMode.Clamp);
                 foreach (var r in ret) r.gameObject.SetActive(false);
             }
 
