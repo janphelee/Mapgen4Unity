@@ -67,6 +67,7 @@ namespace Assets.MapGen
         public static Texture texture()
         {
             var tex = new Texture2D(width, height);
+            tex.filterMode = FilterMode.Point;
             tex.wrapMode = TextureWrapMode.Clamp;
             tex.SetPixels32(pixels);
             tex.Apply();

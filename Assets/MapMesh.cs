@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using Assets.MapUtil;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Assets.MapGen
 {
@@ -16,9 +18,9 @@ namespace Assets.MapGen
         private Texture2D landTexture;
         [SerializeField]
         private Texture2D waterTexture;
-
         [SerializeField]
-        private RenderTexture depthTexture;
+        private Texture2D riverBitmap = null;
+
 
         private void Awake()
         {
@@ -59,71 +61,6 @@ namespace Assets.MapGen
 
         }
 
-        private void splitMesh(Vector3[] vertices, int[] triangles, Vector2[] uv)
-        {
-            int start = 0;
-
-            var dic = new Dictionary<int, int>();
-            var k1 = new List<int>();
-            var v3 = new List<Vector3>();
-            var v2 = new List<Vector2>();
-            for (int i = 0; i < triangles.Length; ++i)
-            {
-                var v = triangles[i];
-                if (!dic.ContainsKey(v))
-                {
-                    dic[v] = v3.Count;
-                    k1.Add(v3.Count);
-                    v3.Add(vertices[v]);
-                    v2.Add(uv[v]);
-                }
-                else
-                {
-                    k1.Add(dic[v]);
-                }
-
-                // 检查超过顶点数量
-                if (v3.Count >= short.MaxValue && i % 3 == 2)
-                {
-                    // 为了保持跟js 绘制同步，调转三角面绘制顺序
-                    k1.Reverse();
-                    createMesh(v3.ToArray(), k1.ToArray(), v2.ToArray(), $"map mesh {start}-{i}");
-
-                    start = i + 1;
-                    dic.Clear();
-                    k1.Clear();
-                    v3.Clear();
-                    v2.Clear();
-                }
-                if (i == triangles.Length - 1)
-                {
-                    k1.Reverse();
-                    createMesh(v3.ToArray(), k1.ToArray(), v2.ToArray(), $"map mesh {start}-{i}");
-                    break;
-                }
-            }
-        }
-
-        private void createMesh(Vector3[] vertices, int[] triangles, Vector2[] uv = null, string name = "map mesh")
-        {
-            var obj = new GameObject(name);
-            obj.transform.SetParent(this.transform, true);
-
-            var filter = obj.AddComponent<MeshFilter>();
-            var mesh = filter.mesh = new Mesh();
-            mesh.vertices = vertices;
-            mesh.triangles = triangles;
-            mesh.uv = uv;
-
-            var render = obj.AddComponent<MeshRenderer>();
-            // render.material = new Material(Shader.Find("Custom/VertexColors"));
-            render.material = new Material(Shader.Find("Custom/VertexColorsOnly"));
-            render.receiveShadows = false;
-            render.lightProbeUsage = UnityEngine.Rendering.LightProbeUsage.Off;
-
-            renderers.Add(render);
-        }
-
         public void setTexture(string name, Texture value)
         {
             foreach (var r in renderers) r.material.SetTexture(name, value);
@@ -143,21 +80,41 @@ namespace Assets.MapGen
             mapData.assignRainfall();//风带植被
             mapData.assignRivers();//河流
 
-            var vertices = new Vector3[mesh.numRegions + mesh.numTriangles];
-            var triangles = new int[3 * mesh.numSolidSides];
-            var emUV = new Vector2[mesh.numRegions + mesh.numTriangles];
-            mapData.setGeometry(vertices, emUV, triangles);
 
+            {
+                int[] triangles;
+                Vector3[] vertices;
+                Vector2[] uvs;
+                mapData.setRiverTextures(out vertices, out uvs, out triangles);
 
-            splitMesh(vertices, triangles, emUV);
+                var meshs = MeshSplit.splitMesh(vertices, triangles, uvs, "river mesh");
+                var ret = MeshSplit.createMeshRender(meshs, this.transform, shaders[2], "river");
+
+                foreach (var r in ret) r.material.SetTexture("_rivertexturemap", riverBitmap);
+                waterTexture = renderTargetImage(rtCamera, shaders[2], string.Empty);
+                foreach (var r in ret) r.gameObject.SetActive(false);
+            }
+
+            {
+                var triangles = new int[3 * mesh.numSolidSides];
+                var vertices = new Vector3[mesh.numRegions + mesh.numTriangles];
+                var uvs = new Vector2[mesh.numRegions + mesh.numTriangles];
+                mapData.setGeometry(vertices, uvs, triangles);
+
+                var meshs = MeshSplit.splitMesh(vertices, triangles, uvs);
+                var ret = MeshSplit.createMeshRender(meshs, this.transform, shaders[0], "map");
+
+                renderers.AddRange(ret);
+                setTexture("_vertex_water", waterTexture);
+
+                landTexture = renderTargetImage(rtCamera, shaders[1], string.Empty);
+            }
 
             texture = ColorMap.texture();
-            landTexture = renderTargetImage(rtCamera, shaders[1], string.Empty);
-            waterTexture = renderTargetImage(rtCamera, shaders[2], string.Empty);
 
             setTexture("_ColorMap", texture);
             setTexture("_vertex_land", landTexture);
-            setTexture("_vertex_water", waterTexture);
+            //setTexture("_vertex_water", waterTexture);
         }
 
         public void setMountainHeight(float mountain_height)

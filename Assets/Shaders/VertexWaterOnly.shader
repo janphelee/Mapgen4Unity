@@ -2,20 +2,23 @@
 
 Shader "Custom/VertexWaterOnly"{
 	Properties{
-		_MountainHeight("Mountain Height", Range(50.0,250.0)) = 50.0
+		_rivertexturemap("rivertexturemap", 2D) = "blue" {}
 	}
 	SubShader{
 		Tags { "RenderType" = "Opaque" "Queue" = "Geometry"}
 		LOD 200
 
 		pass {
+			Blend One OneMinusSrcAlpha
+			BlendOp Add, Add
+
 			CGPROGRAM
 
 			#pragma vertex vert 
 			#pragma fragment frag
 			#include "UnityCG.cginc"
 
-			float _MountainHeight;
+			sampler2D _rivertexturemap;
 
 			struct v2f {
 				float4 pos:POSITION;
@@ -29,11 +32,8 @@ Shader "Custom/VertexWaterOnly"{
 				float2 uv = v.texcoord.xy;
 				float4 pos = v.vertex;
 
-				
-				pos = float4(UnityObjectToViewPos(pos),1);
-				pos += float4(0,max(uv.x, 0.0)*_MountainHeight,-pos.y,1);
-				o.pos = UnityViewToClipPos(pos);
-
+				o.pos = UnityObjectToClipPos(pos);
+				uv.y = 1.0-uv.y;
 				o.uv = uv;
 
 				return o;
@@ -41,8 +41,9 @@ Shader "Custom/VertexWaterOnly"{
 			
 			fixed4 frag(v2f IN) :COLOR
 			{
-				float v_z = IN.uv.x;
-				return float4(frac(256.0*v_z),floor(256.0*v_z)/256.0,0,1);
+				float3 blue = float3(0.2, 0.5, 0.7);
+				float4 color = tex2D(_rivertexturemap, IN.uv);
+				return float4(blue*color.a, color.a);
 			}
 
 			ENDCG

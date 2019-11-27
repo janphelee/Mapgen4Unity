@@ -365,7 +365,7 @@ namespace Assets.MapGen
             // t_downslope_s.fill(-999);
             for (int i = 0; i < t_downslope_s.Length; ++i) t_downslope_s[i] = -999;
 
-            var queue = new FlatQueue<int,float>();
+            var queue = new FlatQueue<int, float>();
 
             /* Part 1: non-shallow ocean triangles get downslope assigned to the lowest neighbor */
             for (var t = 0; t < numTriangles; t++)
@@ -469,6 +469,49 @@ namespace Assets.MapGen
             }
         }
 
+        class _XyUv
+        {
+            public float[] xy { get; set; }
+            public Vector2 uv { get; set; }
+        }
+        /**
+         * Create a bitmap that will be used for texture mapping
+         *   BEND textures will be ordered: {blank side, input side, output side}
+         *   FORK textures will be ordered: {passive input side, active input side, output side}
+         *
+         * Cols will be the input flow rate
+         * Rows will be the output flow rate
+         */
+        private _XyUv[][][][] assignTextureCoordinates(float spacing, int numSizes, int textureSize)
+        {
+            /* create (numSizes+1)^2 size combinations, each with two triangles */
+            _XyUv UV(float x, float y)
+            {
+                return new _XyUv()
+                {
+                    xy = new float[] { x, y },
+                    uv = new Vector2((x + 0.5f) / textureSize, (y + 0.5f) / textureSize)
+                };
+            }
+
+            var triangles = new _XyUv[numSizes + 1][][][];
+            float width = Mathf.Floor((textureSize - 2 * spacing) / (2 * numSizes + 3)) - spacing,
+                  height = Mathf.Floor((textureSize - 2 * spacing) / (numSizes + 1)) - spacing;
+            for (var row = 0; row <= numSizes; row++)
+            {
+                triangles[row] = new _XyUv[numSizes + 1][][];
+                for (var col = 0; col <= numSizes; col++)
+                {
+                    float baseX = spacing + (2 * spacing + 2 * width) * col,
+                          baseY = spacing + (spacing + height) * row;
+                    var t1 = new _XyUv[] { UV(baseX + width, baseY), UV(baseX, baseY + height), UV(baseX + 2 * width, baseY + height) };
+                    var t2 = new _XyUv[] { UV(baseX + 2 * width + spacing, baseY + height), UV(baseX + 3 * width + spacing, baseY), UV(baseX + width + spacing, baseY) };
+                    triangles[row][col] = new _XyUv[][] { t1, t2 };
+                }
+            }
+            return triangles;
+        }
+
         /**
          * 单个网格顶点数量不能超过 UInt16 MaxValue = 65535
          */
@@ -569,5 +612,108 @@ namespace Assets.MapGen
 
             if (I.Length != i) { throw new Exception("wrong size"); }
         }
+
+
+        const int riverTextureSpacing = 40;
+        const int numRiverSizes = 24;
+        const int riverTextureSize = 4096;
+        const float riverMaximumFractionOfWidth = 0.5f;
+        private _XyUv[][][][] riverTexturePositions { get { return assignTextureCoordinates(riverTextureSpacing, numRiverSizes, riverTextureSize); } }
+
+        public void setRiverTextures(out Vector3[] vertices, out Vector2[] uvs, out int[] triangles)
+        {
+            const float lg_min_flow = 2.7f;
+            const float lg_river_width = -2.7f;
+            float MIN_FLOW = Mathf.Exp(lg_min_flow);
+            float RIVER_WIDTH = Mathf.Exp(lg_river_width);
+
+            var numSolidTriangles = mesh.numSolidTriangles;
+            var s_length = mesh.s_length;
+            var riverTexturePositions = this.riverTexturePositions;
+            var spacing = this.spacing;
+
+            int riverSize(int s, float flow)
+            {
+                // TODO: performance: build a table of flow to width
+                if (s < 0) { return 1; }
+                var width = Mathf.Sqrt(flow - MIN_FLOW) * spacing * RIVER_WIDTH;
+                var size = Mathf.Ceil(width * numRiverSizes / s_length[s]);
+                return Mathf.Clamp((int)size, 1, numRiverSizes);
+            }
+
+            var P = new List<Vector3>();
+            var E = new List<Vector2>();
+            var I = new List<int>();
+            int p = 0;
+            for (var t = 0; t < numSolidTriangles; t++)
+            {
+                var out_s = t_downslope_s[t];
+                if (out_s < 0 || out_s >= s_flow.Length)
+                {
+                    //! TODO
+                    //Debug.Log($"s_flow.Length:{s_flow.Length} out_s:{out_s}");
+                    continue;
+                }
+                var out_flow = s_flow[out_s];
+                if (out_s < 0 || out_flow < MIN_FLOW) continue;
+                int r1 = mesh.s_begin_r(3 * t),
+                    r2 = mesh.s_begin_r(3 * t + 1),
+                    r3 = mesh.s_begin_r(3 * t + 2);
+                int in1_s = MeshData.s_next_s(out_s);
+                int in2_s = MeshData.s_next_s(in1_s);
+                var in1_flow = s_flow[mesh.s_opposite_s(in1_s)];
+                var in2_flow = s_flow[mesh.s_opposite_s(in2_s)];
+                var textureRow = riverSize(out_s, out_flow);
+
+                void add(int r, int c, int i, int j, int k)
+                {
+                    var T = riverTexturePositions[r][c][0];
+                    /**
+                       P[p    ] = mesh.r_x(r1);
+                       P[p + 1] = mesh.r_y(r1);2  3
+                       P[p + 4] = mesh.r_x(r2);
+                       P[p + 5] = mesh.r_y(r2);6  7
+                       P[p + 8] = mesh.r_x(r3);
+                       P[p + 9] = mesh.r_y(r3);10 11
+                       P[p + 4*(out_s - 3*t) + 2] = T[i].uv[0];
+                       P[p + 4*(out_s - 3*t) + 3] = T[i].uv[1];
+                       P[p + 4*(in1_s - 3*t) + 2] = T[j].uv[0];
+                       P[p + 4*(in1_s - 3*t) + 3] = T[j].uv[1];
+                       P[p + 4*(in2_s - 3*t) + 2] = T[k].uv[0];
+                       P[p + 4*(in2_s - 3*t) + 3] = T[k].uv[1];
+                     */
+                    I.Add(p);
+                    I.Add(p + 1);
+                    I.Add(p + 2);
+
+                    P.Add(new Vector3(mesh.r_x(r1), mesh.r_y(r1)));
+                    P.Add(new Vector3(mesh.r_x(r2), mesh.r_y(r2)));
+                    P.Add(new Vector3(mesh.r_x(r3), mesh.r_y(r3)));
+
+                    var te = new Vector2[3];
+                    te[(out_s - 3 * t)] = T[i].uv;
+                    te[(in1_s - 3 * t)] = T[j].uv;
+                    te[(in2_s - 3 * t)] = T[k].uv;
+                    E.Add(te[0]);
+                    E.Add(te[1]);
+                    E.Add(te[2]);
+
+                    p += 3;
+                }
+
+                if (in1_flow >= MIN_FLOW)
+                {
+                    add(textureRow, riverSize(in1_s, in1_flow), 0, 2, 1);
+                }
+                if (in2_flow >= MIN_FLOW)
+                {
+                    add(textureRow, riverSize(in2_s, in2_flow), 2, 1, 0);
+                }
+            }
+            triangles = I.ToArray();
+            vertices = P.ToArray();
+            uvs = E.ToArray();
+        }
+
     }
 }
