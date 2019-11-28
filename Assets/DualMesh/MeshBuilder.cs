@@ -260,6 +260,7 @@ namespace Assets.MapGen
             // TODO: use Float32Array instead of this, so that we can
             // construct directly from points read in from a file
             var delaunator = new Delaunator(this.points.Select(t => (IPoint)new Point(t[0], t[1])));
+            UnityEngine.Debug.Log($"delaunator Triangles:{delaunator.Triangles.Length} Halfedges:{delaunator.Halfedges.Length}");
             var graph = new Graph()
             {
                 _r_vertex = this.points,

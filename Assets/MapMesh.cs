@@ -86,12 +86,13 @@ namespace Assets.MapGen
                 Vector3[] vertices;
                 Vector2[] uvs;
                 mapData.setRiverTextures(out vertices, out uvs, out triangles);
+                Debug.Log($"setRiverTextures triangles:{vertices.Length / 3}");
 
                 var meshs = MeshSplit.splitMesh(vertices, triangles, uvs, "river mesh");
                 var ret = MeshSplit.createMeshRender(meshs, this.transform, shaders[2], "river");
 
                 foreach (var r in ret) r.material.SetTexture("_rivertexturemap", riverBitmap);
-                waterTexture = renderTargetImage(rtCamera, shaders[2], string.Empty, FilterMode.Bilinear, TextureWrapMode.Clamp);
+                waterTexture = renderTargetImage(rtCamera, shaders[2], string.Empty);
                 foreach (var r in ret) r.gameObject.SetActive(false);
             }
 

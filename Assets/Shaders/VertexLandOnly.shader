@@ -46,16 +46,17 @@ Shader "Custom/VertexLandOnly"{
 				float2 v_xy = IN.v_xy.xy/IN.v_xy.w;
 
 				float e = 0.5 * (1.0 + v_em.x);
-				float river = tex2D(_vertex_water, v_xy).a;
-				if (e >= 0.5) {
-					float bump = _outline_water / 256.0;
-					float L1 = e + bump;
-					float L2 = (e - 0.5) * (bump * 100.0) + 0.5;
-					// TODO: simplify equation
-					e = min(L1, lerp(L1, L2, river));
-				}
+				//float river = tex2D(_vertex_water, v_xy).a;
+				//if (e >= 0.5) {
+				//	float bump = _outline_water / 256.0;
+				//	float L1 = e + bump;
+				//	float L2 = (e - 0.5) * (bump * 100.0) + 0.5;
+				//	// TODO: simplify equation
+				//	e = min(L1, lerp(L1, L2, river));
+				//}
 
-				return float4(frac(256.0*e), e, 0, 1);
+				//return float4(frac(256.0*e), e, 0, 1);
+				return tex2D(_vertex_water, v_xy);
 			}
 
 			ENDCG

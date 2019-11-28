@@ -42,8 +42,8 @@ Shader "Custom/VertexWaterOnly"{
 			fixed4 frag(v2f IN) :COLOR
 			{
 				float3 blue = float3(0.2, 0.5, 0.7);
-				float4 color = tex2D(_rivertexturemap, IN.uv);
-				return float4(blue*color.a, color.a);
+				float4 c = tex2D(_rivertexturemap, IN.uv);
+				return float4(blue*c.a, c.a);
 			}
 
 			ENDCG
