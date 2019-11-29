@@ -443,7 +443,7 @@ namespace Assets.MapGen
 
             for (var t = 0; t < numTriangles; t++)
             {
-                if (t_elevation[t] >= 0.0)
+                if (t_elevation[t] >= 0)
                 {
                     t_flow[t] = flow * t_moisture[t] * t_moisture[t];
                 }
@@ -456,9 +456,9 @@ namespace Assets.MapGen
             {
                 var tributary_t = order_t[i];
                 var flow_s = t_downslope_s[tributary_t];
+                var trunk_t = flow_s < 0 ? 0 : (_halfedges[flow_s] / 3);
                 if (flow_s >= 0)// 可能有未重新赋值的-999
                 {
-                    var trunk_t = (_halfedges[flow_s] / 3) | 0;
                     t_flow[trunk_t] += t_flow[tributary_t];
                     s_flow[flow_s] += t_flow[tributary_t]; // TODO: s_flow[t_downslope_s[t]] === t_flow[t]; redundant?
                     if (t_elevation[trunk_t] > t_elevation[tributary_t] && t_elevation[tributary_t] >= 0)
@@ -648,14 +648,11 @@ namespace Assets.MapGen
             for (var t = 0; t < numSolidTriangles; t++)
             {
                 var out_s = t_downslope_s[t];
-                if (out_s < 0 || out_s >= s_flow.Length)
-                {
-                    //! TODO
-                    //Debug.Log($"s_flow.Length:{s_flow.Length} out_s:{out_s}");
-                    continue;
-                }
+                if (out_s < 0) continue;
+
                 var out_flow = s_flow[out_s];
-                if (out_s < 0 || out_flow < MIN_FLOW) continue;
+                if (out_flow < MIN_FLOW) continue;
+
                 int r1 = mesh.s_begin_r(3 * t),
                     r2 = mesh.s_begin_r(3 * t + 1),
                     r3 = mesh.s_begin_r(3 * t + 2);

@@ -1,6 +1,4 @@
-﻿using DelaunatorSharp;
-using DelaunatorSharp.Interfaces;
-using DelaunatorSharp.Models;
+﻿using Assets.MapUtil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -138,11 +136,11 @@ namespace Assets.MapGen
                 var w = size * t;
                 var offset = (float)Math.Pow(t - 0.5f, 2f);
 
-                //points.Add(new float[] { offset, w });
-                //points.Add(new float[] { size - offset, w });
+                points.Add(new float[] { offset, w });
+                points.Add(new float[] { size - offset, w });
 
-                //points.Add(new float[] { w, offset });
-                //points.Add(new float[] { w, size - offset });
+                points.Add(new float[] { w, offset });
+                points.Add(new float[] { w, size - offset });
             }
             return points;
         }
@@ -214,6 +212,7 @@ namespace Assets.MapGen
         public MeshBuilder(float boundarySpacing = 0f)
         {
             var boundaryPoints = boundarySpacing > 0 ? addBoundaryPoints(boundarySpacing, 1000) : new List<float[]>();
+            UnityEngine.Debug.Log($"boundaryPoints:{boundaryPoints.Count} space:{boundarySpacing}");
             this.points = boundaryPoints;
             this.numBoundaryRegions = boundaryPoints.Count;
         }
@@ -259,12 +258,14 @@ namespace Assets.MapGen
         {
             // TODO: use Float32Array instead of this, so that we can
             // construct directly from points read in from a file
-            var delaunator = new Delaunator(this.points.Select(t => (IPoint)new Point(t[0], t[1])));
+            var delaunator = Delaunator.from(this.points);
+
+            UnityEngine.Debug.Log($"delaunator Triangles:{delaunator.triangles.Length} Halfedges:{delaunator.halfedges.Length}");
             var graph = new Graph()
             {
                 _r_vertex = this.points,
-                _triangles = delaunator.Triangles,
-                _halfedges = delaunator.Halfedges
+                _triangles = delaunator.triangles,
+                _halfedges = delaunator.halfedges
             };
 
             if (runChecks)

@@ -1,5 +1,6 @@
 ﻿using Assets.MapUtil;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
@@ -80,18 +81,20 @@ namespace Assets.MapGen
             mapData.assignRainfall();//风带植被
             mapData.assignRivers();//河流
 
-
             {
                 int[] triangles;
                 Vector3[] vertices;
                 Vector2[] uvs;
                 mapData.setRiverTextures(out vertices, out uvs, out triangles);
+                Debug.Log($"setRiverTextures triangles:{vertices.Length / 3}");
 
                 var meshs = MeshSplit.splitMesh(vertices, triangles, uvs, "river mesh");
                 var ret = MeshSplit.createMeshRender(meshs, this.transform, shaders[2], "river");
-
+                // riverBitmap要开启mipmaps,且FilterMode.Trilinear
                 foreach (var r in ret) r.material.SetTexture("_rivertexturemap", riverBitmap);
                 waterTexture = renderTargetImage(rtCamera, shaders[2], string.Empty);
+                waterTexture.filterMode = FilterMode.Bilinear;
+                //saveToPng(waterTexture, "C://Users/dphe/Desktop" + "/water.png");
                 foreach (var r in ret) r.gameObject.SetActive(false);
             }
 
@@ -108,6 +111,7 @@ namespace Assets.MapGen
                 setTexture("_vertex_water", waterTexture);
 
                 landTexture = renderTargetImage(rtCamera, shaders[1], string.Empty);
+                landTexture.filterMode = FilterMode.Bilinear;
             }
 
             texture = ColorMap.texture();
@@ -147,7 +151,7 @@ namespace Assets.MapGen
             camera.RenderWithShader(shader, tag);
 
             // Make a new texture and read the active Render Texture into it.
-            Texture2D image = new Texture2D(camera.targetTexture.width, camera.targetTexture.height);
+            Texture2D image = new Texture2D(camera.targetTexture.width, camera.targetTexture.height, TextureFormat.RGBA32, false, false);
             image.filterMode = filterMode;
             image.wrapMode = wrapMode;
             image.ReadPixels(new Rect(0, 0, camera.targetTexture.width, camera.targetTexture.height), 0, 0);
@@ -156,6 +160,17 @@ namespace Assets.MapGen
             // Replace the original active Render Texture.
             RenderTexture.active = currentRT;
             return image;
+        }
+
+        public void saveToPng(Texture2D texture, string path)
+        {
+            byte[] bytes = texture.EncodeToPNG();
+            FileStream file = File.Open(path, FileMode.Create);
+            BinaryWriter writer = new BinaryWriter(file);
+            writer.Write(bytes);
+            file.Close();
+
+            Debug.Log($"saveTo path:{path}");
         }
     }
 }

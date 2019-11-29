@@ -56,6 +56,7 @@ public class MapGUI : MonoBehaviour
     private Rect mWindowRect = new Rect(0f, 0f, 200f, 400f);
 
     private MapMesh mapMesh { get; set; }
+    private bool activeUI { get; set; }
 
     // Start is called before the first frame update
     void Start()
@@ -63,10 +64,14 @@ public class MapGUI : MonoBehaviour
         mapMesh = GetComponent<MapMesh>();
     }
 
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.H)) activeUI = !activeUI;
+    }
     // Update is called once per frame
     private void OnGUI()
     {
-        mWindowRect = GUI.Window(10086, mWindowRect, WindowFunction, "地图参数");
+        if (activeUI) mWindowRect = GUI.Window(10086, mWindowRect, WindowFunction, "地图参数");
     }
 
     private void WindowFunction(int windowId)
