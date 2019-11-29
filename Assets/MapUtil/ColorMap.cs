@@ -64,11 +64,11 @@ namespace Assets.MapGen
 
         }
 
-        public static Texture texture()
+        public static Texture texture(FilterMode filterMode = FilterMode.Point, TextureWrapMode wrapMode = TextureWrapMode.Clamp)
         {
             var tex = new Texture2D(width, height);
-            tex.filterMode = FilterMode.Point;
-            tex.wrapMode = TextureWrapMode.Clamp;
+            tex.filterMode = filterMode;
+            tex.wrapMode = wrapMode;
             tex.SetPixels32(pixels);
             tex.Apply();
             return tex;
