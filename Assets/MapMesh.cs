@@ -1,5 +1,6 @@
 ﻿using Assets.MapUtil;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
@@ -92,7 +93,8 @@ namespace Assets.MapGen
                 var ret = MeshSplit.createMeshRender(meshs, this.transform, shaders[2], "river");
 
                 foreach (var r in ret) r.material.SetTexture("_rivertexturemap", riverBitmap);
-                waterTexture = renderTargetImage(rtCamera, shaders[2], string.Empty);
+                waterTexture = renderTargetImage(rtCamera, shaders[2], string.Empty);//要开启mipmaps
+                saveToPng(waterTexture, "C://Users/dphe/Desktop" + "/water.png");
                 foreach (var r in ret) r.gameObject.SetActive(false);
             }
 
@@ -108,7 +110,7 @@ namespace Assets.MapGen
                 renderers.AddRange(ret);
                 setTexture("_vertex_water", waterTexture);
 
-                landTexture = renderTargetImage(rtCamera, shaders[1], string.Empty);
+                landTexture = renderTargetImage(rtCamera, shaders[1], string.Empty, FilterMode.Trilinear);
             }
 
             texture = ColorMap.texture();
@@ -157,6 +159,17 @@ namespace Assets.MapGen
             // Replace the original active Render Texture.
             RenderTexture.active = currentRT;
             return image;
+        }
+
+        public void saveToPng(Texture2D texture, string path)
+        {
+            byte[] bytes = texture.EncodeToPNG();
+            FileStream file = File.Open(path, FileMode.Create);
+            BinaryWriter writer = new BinaryWriter(file);
+            writer.Write(bytes);
+            file.Close();
+
+            Debug.Log($"saveTo path:{path}");
         }
     }
 }

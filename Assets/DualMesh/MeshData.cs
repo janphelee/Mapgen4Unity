@@ -1,9 +1,5 @@
-﻿using DelaunatorSharp;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Assets.MapGen
 {
@@ -18,10 +14,10 @@ namespace Assets.MapGen
             return new MeshData(new MeshBuilder.Graph()
             {
                 numBoundaryRegions = 0,
-                numSolidSides = delaunator.Triangles.Length,
+                numSolidSides = delaunator.triangles.Length,
                 _r_vertex = points,
-                _triangles = delaunator.Triangles,
-                _halfedges = delaunator.Halfedges
+                _triangles = delaunator.triangles,
+                _halfedges = delaunator.halfedges
             });
         }
 

@@ -8,9 +8,9 @@ namespace Assets.MapGen
 {
     public class Loader : MonoBehaviour
     {
-        public float jitter = 0.5f;
-        public float spacing = 5f;
-        public int seed = 187;
+        private float jitter = 0.5f;
+        private float spacing = 5f;
+        private int seed = 187;
 
         [SerializeField]
         private MapMesh mapMesh = null;
