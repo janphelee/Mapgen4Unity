@@ -143,12 +143,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rtCamera: {fileID: 2105588851}
-  landTexture: {fileID: 0}
-  waterTexture: {fileID: 0}
+  rt_WaterColor: {fileID: 8400000, guid: 2e7c81b333992ad47be99d3c4d782550, type: 2}
+  rt_LandColor: {fileID: 8400000, guid: 9df2bd912bc72174e86b2cc15b648b0b, type: 2}
   riverBitmap: {fileID: 2800000, guid: ce16f3d170dad474885d3caf2b622cac, type: 3}
-  camW: 0
-  camH: 0
-  aspect: 0
 --- !u!4 &624059199
 Transform:
   m_ObjectHideFlags: 0
@@ -362,7 +359,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 1500
+  far clip plane: 15000
   field of view: 57
   orthographic: 1
   orthographic size: 500
@@ -458,7 +455,7 @@ Camera:
     serializedVersion: 2
     m_Bits: 4294967295
   m_RenderingPath: -1
-  m_TargetTexture: {fileID: 8400000, guid: 9df2bd912bc72174e86b2cc15b648b0b, type: 2}
+  m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 0

@@ -1,9 +1,6 @@
 ﻿using Assets.MapUtil;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Assets.MapGen
 {
@@ -12,16 +9,17 @@ namespace Assets.MapGen
         private Shader[] shaders { get; set; }
         private Texture texture { get; set; }
 
-        private List<MeshRenderer> renderers = new List<MeshRenderer>();
         [SerializeField]
         private Camera rtCamera = null;
-        [SerializeField]
-        private Texture2D landTexture;
-        [SerializeField]
-        private Texture2D waterTexture;
+
+        [SerializeField] private RenderTexture rt_WaterColor = null;
+        [SerializeField] private RenderTexture rt_LandColor = null;
+
         [SerializeField]
         private Texture2D riverBitmap = null;
 
+        private MeshRenderer[] waters { get; set; }
+        private MeshRenderer[] lands { get; set; }
 
         private void Awake()
         {
@@ -33,42 +31,32 @@ namespace Assets.MapGen
             };
         }
 
-        public int camW;
-        public int camH;
-        public float aspect;
-
         private void LateUpdate()
         {
-            if (Camera.current)
-            {
-                if (camW != Camera.current.pixelWidth || camH != Camera.current.pixelHeight)
-                {
-                    camW = Camera.current.pixelWidth;
-                    camH = Camera.current.pixelHeight;
-                    aspect = Camera.current.aspect;
-                    //depthTexture = new RenderTexture(2048, 2048 * camH / camW, 16);
-                    ////depthTexture.filterMode = FilterMode.Point;
-                    //depthTexture.wrapMode = TextureWrapMode.Clamp;
+            var rt = rtCamera.targetTexture;
 
-                    //setTexture("_vertex_depth", depthTexture);
-                }
-                //var targetTexture = rtCamera.targetTexture;
-                rtCamera.CopyFrom(Camera.current);
-                //rtCamera.targetTexture = targetTexture;
-                //rtCamera.RenderWithShader(shaders[2], "");
+            foreach (var r in waters) r.gameObject.SetActive(true);
+            foreach (var r in lands) r.gameObject.SetActive(false);
+            rtCamera.targetTexture = rt_WaterColor;
+            rtCamera.RenderWithShader(shaders[2], string.Empty);
 
-                ////readTargetTexture(rtCamera, depthTexture);
-            }
+            foreach (var r in waters) r.gameObject.SetActive(false);
+            foreach (var r in lands) r.gameObject.SetActive(true);
+            rtCamera.targetTexture = rt_LandColor;
+            rtCamera.RenderWithShader(shaders[1], string.Empty);
 
+            rtCamera.targetTexture = rt;
         }
 
         public void setTexture(string name, Texture value)
         {
-            foreach (var r in renderers) r.material.SetTexture(name, value);
+            if (lands == null) return;
+            foreach (var r in lands) r.material.SetTexture(name, value);
         }
         public void SetFloat(string name, float value)
         {
-            foreach (var r in renderers) r.material.SetFloat(name, value);
+            if (lands == null) return;
+            foreach (var r in lands) r.material.SetFloat(name, value);
         }
 
         public void setup(MeshData mesh, int[] peaks_t, float spacing, int mountain_height = 50)
@@ -89,13 +77,9 @@ namespace Assets.MapGen
                 Debug.Log($"setRiverTextures triangles:{vertices.Length / 3}");
 
                 var meshs = MeshSplit.splitMesh(vertices, triangles, uvs, "river mesh");
-                var ret = MeshSplit.createMeshRender(meshs, this.transform, shaders[2], "river");
+                waters = MeshSplit.createMeshRender(meshs, this.transform, shaders[2], "river");
                 // riverBitmap要开启mipmaps,且FilterMode.Trilinear
-                foreach (var r in ret) r.material.SetTexture("_rivertexturemap", riverBitmap);
-                waterTexture = renderTargetImage(rtCamera, shaders[2], string.Empty);
-                waterTexture.filterMode = FilterMode.Bilinear;
-                //saveToPng(waterTexture, "C://Users/dphe/Desktop" + "/water.png");
-                foreach (var r in ret) r.gameObject.SetActive(false);
+                foreach (var r in waters) r.material.SetTexture("_rivertexturemap", riverBitmap);
             }
 
             {
@@ -105,28 +89,14 @@ namespace Assets.MapGen
                 mapData.setGeometry(vertices, uvs, triangles);
 
                 var meshs = MeshSplit.splitMesh(vertices, triangles, uvs);
-                var ret = MeshSplit.createMeshRender(meshs, this.transform, shaders[0], "map");
-
-                renderers.AddRange(ret);
-                setTexture("_vertex_water", waterTexture);
-
-                landTexture = renderTargetImage(rtCamera, shaders[1], string.Empty);
-                landTexture.filterMode = FilterMode.Bilinear;
+                lands = MeshSplit.createMeshRender(meshs, this.transform, shaders[0], "map");
+                setTexture("_vertex_water", rt_WaterColor);
             }
 
             texture = ColorMap.texture();
 
             setTexture("_ColorMap", texture);
-            setTexture("_vertex_land", landTexture);
-            //setTexture("_vertex_water", waterTexture);
-        }
-
-        public void setMountainHeight(float mountain_height)
-        {
-            foreach (var render in renderers)
-            {
-                render.material.SetFloat("_MountainHeight", mountain_height);
-            }
+            setTexture("_vertex_land", rt_LandColor);
         }
 
         public void readTargetTexture(Camera camera, Texture2D output)
