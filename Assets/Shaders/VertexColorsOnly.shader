@@ -13,16 +13,17 @@ Shader "Custom/VertexColorsOnly"{
 		_outline_threshold("outline_threshold", Range(0.0,100.0)) = 0.0
 		_outline_coast("outline_coast", Range(0,1)) = 0.0
 		_outline_water("outline_water", Range(0.0,20.0)) = 10.0
+		_biome_colors("biome_colors", Range(0,1)) = 1.0
 
-		_ambient("ambient", Range(0.0,1.0)) = 0.25
 
 		_light_angle_deg("light_angle_deg", Range(0,360)) = 80
 		_rotate_deg("rotate_deg", Range(-180,180)) = 0
-		_overhead("overhead", Range(0,60)) = 30.0
+
 		_slope("slope", Range(0,1)) = 0.5
 		_flat("flat", Range(0,5)) = 2.5
+		_ambient("ambient", Range(0.0,1.0)) = 0.25
+		_overhead("overhead", Range(0,60)) = 30.0
 
-		_biome_colors("biome_colors", Range(0,1)) = 1.0
 
 	}
 	SubShader{
