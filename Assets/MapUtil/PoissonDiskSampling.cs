@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using static Assets.MapGen.PoissonMeta;
 
-namespace Assets.MapGen
+namespace Assets.MapUtil
 {
+    using static PoissonMeta;
+
     class PoissonDiskSampling
     {
         int[] shape { get; set; }

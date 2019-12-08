@@ -1,10 +1,12 @@
-﻿using System;
+﻿using Assets.DualMesh;
+using Assets.MapUtil;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace Assets.MapGen
+namespace Assets
 {
     public class Loader : MonoBehaviour
     {

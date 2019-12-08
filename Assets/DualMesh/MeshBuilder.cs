@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Assets.MapGen
+namespace Assets.DualMesh
 {
     /**
      * Build a dual mesh from points, with ghost triangles around the exterior.

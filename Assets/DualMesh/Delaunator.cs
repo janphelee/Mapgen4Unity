@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Assets.MapGen
+namespace Assets.DualMesh
 {
     class Delaunator
     {

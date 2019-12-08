@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Assets.MapGen
+namespace Assets.MapUtil
 {
     class SimplexNoise
     {
