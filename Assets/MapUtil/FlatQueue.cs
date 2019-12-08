@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Assets.MapGen.MapUtil
+namespace Assets.MapUtil
 {
     public class FlatQueue<K, V> where K : IComparable where V : IComparable
     {

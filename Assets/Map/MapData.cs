@@ -1,9 +1,10 @@
-﻿using Assets.MapGen.MapUtil;
+﻿using Assets.DualMesh;
+using Assets.MapUtil;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Assets.MapGen
+namespace Assets.Map
 {
     class MapData
     {
@@ -515,14 +516,7 @@ namespace Assets.MapGen
         /**
          * 单个网格顶点数量不能超过 UInt16 MaxValue = 65535
          */
-        public void setGeometry(Vector3[] P, Vector2[] E, int[] I)
-        {
-            setVertices(P);
-            setElevation(E);
-            setTriangles(I);
-        }
-
-        private void setVertices(Vector3[] P)
+        public void setMeshGeometry(Vector3[] P)
         {
             var mesh = this.mesh;
             int numRegions = mesh.numRegions, numTriangles = mesh.numTriangles;
@@ -537,6 +531,12 @@ namespace Assets.MapGen
             {
                 P[p++] = new Vector3(mesh.t_x(t), mesh.t_y(t));
             }
+        }
+
+        public void setMapGeometry(Vector2[] E, int[] I)
+        {
+            setElevation(E);
+            setTriangles(I);
         }
 
         private void setElevation(Vector2[] E)
@@ -620,7 +620,7 @@ namespace Assets.MapGen
         const float riverMaximumFractionOfWidth = 0.5f;
         private _XyUv[][][][] riverTexturePositions { get { return assignTextureCoordinates(riverTextureSpacing, numRiverSizes, riverTextureSize); } }
 
-        public void setRiverTextures(out Vector3[] vertices, out Vector2[] uvs, out int[] triangles)
+        public void setRiverGeometry(out Vector3[] vertices, out Vector2[] uvs, out int[] triangles)
         {
             const float lg_min_flow = 2.7f;
             const float lg_river_width = -2.7f;

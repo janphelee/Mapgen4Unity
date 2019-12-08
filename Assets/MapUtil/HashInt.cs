@@ -1,4 +1,4 @@
-﻿namespace Assets.MapGen
+﻿namespace Assets.MapUtil
 {
     class HashInt
     {

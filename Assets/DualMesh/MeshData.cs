@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Assets.MapGen
+namespace Assets.DualMesh
 {
     class MeshData
     {

@@ -1,10 +1,8 @@
-﻿using System;
+﻿using Assets.MapUtil;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Assets.MapGen
+namespace Assets.Map
 {
     class MapPainting
     {
@@ -40,8 +38,9 @@ namespace Assets.MapGen
             }
         }
 
-        public void generate()
+        private void generate()
         {
+            UnityEngine.Debug.Log($"dphe MapPainting.generate seed:{seed} island:{island}");
             var noise = new SimplexNoise(Rander.makeRandFloat(this.seed));
             var amplitudes = new float[] { 1f, 1f / 2, 1f / 4, 1f / 8, 1f / 16 };
 

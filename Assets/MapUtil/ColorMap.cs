@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Assets.MapGen
+namespace Assets.MapUtil
 {
     class ColorMap
     {
