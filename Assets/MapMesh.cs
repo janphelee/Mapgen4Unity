@@ -18,9 +18,11 @@ namespace Assets
         public MeshSplit waters { get; private set; }
         public MeshSplit landzs { get; private set; }
 
-        private MapPainting painting = new MapPainting();
+        public MapPainting painting { get; private set; }
         private MapData mapData { get; set; }
-        private bool needRender { get; set; }
+        private int needRender { get; set; }
+        private GameObject tmpObj { get; set; }
+        private Camera mainCamera { get; set; }
 
 
         private void Awake()
@@ -33,14 +35,20 @@ namespace Assets
             };
             waters = MeshSplit.createMesh(transform, "river mesh");
             landzs = MeshSplit.createMesh(transform, "map mesh");
+
+            tmpObj = new GameObject("__worldToLandPosition");
+            mainCamera = Camera.main;
+            painting = new MapPainting();
         }
         private void Update()
         {
+
         }
+
         private void LateUpdate()
         {
-            if (!needRender) return;
-            needRender = !needRender;
+            if (needRender < 20) return;
+            needRender = 0;
 
             painting.setElevationParam(/*int seed = 187, float island = 0.5f*/);
             mapData.assignElevation(painting);//海拔地势
@@ -92,11 +100,38 @@ namespace Assets
             rtCamera.targetTexture = rt;
         }
 
+        public Vector3 getHitPosition()
+        {
+            if (!mainCamera)
+            {
+                Debug.Log($"getHitPosition zero 111");
+                return Vector3.zero;
+            }
+            var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit, mainCamera.farClipPlane))
+            {
+                return worldToLandPosition(hit.point);
+            }
+            Debug.Log($"getHitPosition zero 222");
+            return Vector3.zero;
+        }
+        public Vector3 worldToLandPosition(Vector3 p)
+        {
+            needRender++;
+            tmpObj.transform.SetParent(null);
+            tmpObj.transform.position = p;
+            tmpObj.transform.SetParent(transform, true);
+
+            var sp = tmpObj.transform.localPosition / 1000f;
+            //Debug.Log($"worldToLandPosition {tmpObj.transform.localPosition} {sp.x},{sp.y}");
+            return sp;
+        }
 
         public void setup(MeshData mesh, int[] peaks_t, float spacing, int mountain_height = 50)
         {
             mapData = new MapData(mesh, peaks_t, spacing);
-            needRender = true;
+            needRender = 100;
         }
 
         public void readTargetTexture(Camera camera, Texture2D output)

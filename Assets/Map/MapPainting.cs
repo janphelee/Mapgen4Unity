@@ -1,6 +1,7 @@
 ﻿using Assets.MapUtil;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Assets.Map
 {
@@ -104,9 +105,9 @@ namespace Assets.Map
         }
         public readonly Dictionary<string, Tool> TOOLS = new Dictionary<string, Tool>() {
             {"ocean",   new Tool(){elevation=-0.25f}},
-            {"shallow", new Tool(){elevation=-0.25f}},
-            {"valley",  new Tool(){elevation=-0.25f}},
-            {"mountain",new Tool(){elevation=-0.25f}}
+            {"shallow", new Tool(){elevation=-0.05f}},
+            {"valley",  new Tool(){elevation=+0.05f}},
+            {"mountain",new Tool(){elevation=+1.00f}}
         };
 
         /**
@@ -143,19 +144,41 @@ namespace Assets.Map
                     var p = y * CANVAS_SIZE + x;
                     var distance = Math.Sqrt((x - xc) * (x - xc) + (y - yc) * (y - yc));
                     var strength = 1.0f - (float)Math.Min(1, Math.Max(0, (distance - innerRadius) / (outerRadius - innerRadius)));
-                    var factor = rate / 1000 * deltaTimeInMs;
+                    var factor = rate * deltaTimeInMs / 1000f;
                     currentStrokeTime[p] += strength * factor;
                     if (strength > currentStrokeStrength[p])
                     {
-                        currentStrokeStrength[p] = (1 - factor) * currentStrokeStrength[p] + factor * strength;
+                        currentStrokeStrength[p] = (1f - factor) * currentStrokeStrength[p] + factor * strength;
                     }
-                    var mix = currentStrokeStrength[p] * Math.Min(1, currentStrokeTime[p]);
-                    elevation[p] = (1 - mix) * currentStrokePreviousElevation[p] + mix * newElevation;
+                    var mix = currentStrokeStrength[p] * Math.Min(1f, currentStrokeTime[p]);
+                    elevation[p] = (1f - mix) * currentStrokePreviousElevation[p] + mix * newElevation;
                 }
             }
 
             this.userHasPainted = true;
         }
 
+        long timeLastFrame;
+        public void startPen(Vector2 p)
+        {
+            timeLastFrame = DateTime.Now.Ticks / 10000;
+            reset(currentStrokeTime, 0);
+            reset(currentStrokeStrength, 0);
+            elevation.CopyTo(currentStrokePreviousElevation, 0);
+
+            dragPen(p);
+        }
+
+        public void dragPen(Vector2 p)
+        {
+            var nowMs = DateTime.Now.Ticks / 10000;
+            paintAt(TOOLS["mountain"], p.x, p.y, SIZES["small"], (int)(nowMs - timeLastFrame));
+            timeLastFrame = nowMs;
+        }
+
+        private void reset<T>(T[] a, T b)
+        {
+            for (int i = 0; i < a.Length; ++i) a[i] = b;
+        }
     }
 }
