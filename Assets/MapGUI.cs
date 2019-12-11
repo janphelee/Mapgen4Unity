@@ -78,11 +78,26 @@ namespace Assets
             mapMesh = GetComponent<MapMesh>();
             mainCamera = Camera.main;
             eulerAngles = transform.parent.localEulerAngles;
+
+            activeUI = true;
         }
 
         private void Update()
         {
             if (Input.GetKeyDown(KeyCode.H)) activeUI = !activeUI;
+            if (!activeUI) return;
+
+            if (Input.GetMouseButtonDown(0))
+            {
+                var p = mapMesh.getHitPosition();
+                mapMesh.painting.startPen(p);
+            }
+            else if (Input.GetMouseButton(0))
+            {
+                var p = mapMesh.getHitPosition();
+                mapMesh.painting.dragPen(p);
+                mapMesh.redraw();
+            }
         }
         // Update is called once per frame
         private void OnGUI()

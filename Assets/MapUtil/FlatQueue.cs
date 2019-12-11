@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections; // 导入ArrayList的命名空间
 
 namespace Assets.MapUtil
 {
@@ -20,6 +21,11 @@ namespace Assets.MapUtil
             this.length = 0;
             this.ids.Clear();
             this.values.Clear();
+        }
+
+        public int size()
+        {
+            return this.length;
         }
 
         public void push(K id, V value)
