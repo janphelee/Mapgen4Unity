@@ -117,15 +117,15 @@ namespace Assets.Map
          * @param {number} x0 - should be 0 to 1
          * @param {number} y0 - should be 0 to 1
          * @param {{innerRadius: number, outerRadius: number, rate: number}} size
-         * @param {number} deltaTimeInMs
+         * @param {number} deltaTimeInSec
          */
-        public void paintAt(Tool tool, float x0, float y0, Size size, int deltaTimeInMs)
+        public void paintAt(Tool tool, float x0, float y0, Size size, float deltaTimeInSec)
         {
             var elevation = this.elevation;
             /* This has two effects: first time you click the mouse it has a
              * strong effect, and it also limits the amount in case you
              * pause */
-            deltaTimeInMs = Math.Min(100, deltaTimeInMs);
+            deltaTimeInSec = Math.Min(0.1f, deltaTimeInSec);
 
             var newElevation = tool.elevation;
             var innerRadius = size.innerRadius;
@@ -144,7 +144,7 @@ namespace Assets.Map
                     var p = y * CANVAS_SIZE + x;
                     var distance = Math.Sqrt((x - xc) * (x - xc) + (y - yc) * (y - yc));
                     var strength = 1.0f - (float)Math.Min(1, Math.Max(0, (distance - innerRadius) / (outerRadius - innerRadius)));
-                    var factor = rate * deltaTimeInMs / 1000f;
+                    var factor = rate * deltaTimeInSec;
                     currentStrokeTime[p] += strength * factor;
                     if (strength > currentStrokeStrength[p])
                     {
@@ -158,10 +158,8 @@ namespace Assets.Map
             this.userHasPainted = true;
         }
 
-        long timeLastFrame;
         public void startPen(Vector2 p)
         {
-            timeLastFrame = DateTime.Now.Ticks / 10000;
             reset(currentStrokeTime, 0);
             reset(currentStrokeStrength, 0);
             elevation.CopyTo(currentStrokePreviousElevation, 0);
@@ -171,9 +169,7 @@ namespace Assets.Map
 
         public void dragPen(Vector2 p)
         {
-            var nowMs = DateTime.Now.Ticks / 10000;
-            paintAt(TOOLS["mountain"], p.x, p.y, SIZES["small"], (int)(nowMs - timeLastFrame));
-            timeLastFrame = nowMs;
+            paintAt(TOOLS["mountain"], p.x, p.y, SIZES["small"], Time.deltaTime);
         }
 
         private void reset<T>(T[] a, T b)

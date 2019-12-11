@@ -20,7 +20,8 @@ namespace Assets
 
         public MapPainting painting { get; private set; }
         private MapData mapData { get; set; }
-        private int needRender { get; set; }
+        private MapWorker worker { get; set; }
+        private bool needRender { get; set; }
         private GameObject tmpObj { get; set; }
         private Camera mainCamera { get; set; }
 
@@ -40,48 +41,31 @@ namespace Assets
             mainCamera = Camera.main;
             painting = new MapPainting();
         }
-        private void Update()
-        {
-
-        }
 
         private void LateUpdate()
         {
-            if (needRender < 20) return;
-            needRender = 0;
+            if (!needRender) return;
+            needRender = !needRender;
 
-            painting.setElevationParam(/*int seed = 187, float island = 0.5f*/);
-            mapData.assignElevation(painting);//海拔地势
-            mapData.assignRainfall();//风带植被
-            mapData.assignRivers();//河流
-
-            var mesh = mapData.mesh;
+            worker.getBuffer((c, bz) =>
             {
-                int[] triangles;
-                Vector3[] vertices;
-                Vector2[] uvs;
-                mapData.setRiverGeometry(out vertices, out uvs, out triangles);
-                //Debug.Log($"setRiverTextures triangles:{vertices.Length / 3}");
-
-                waters.setup(vertices, triangles, uvs, shaders[2]);
+                var v31 = bz[0].vertices;
+                var v21 = bz[0].uv;
+                var t31 = bz[0].triangles;
+                waters.setup(v31, t31, v21, shaders[2]);
                 // riverBitmap要开启mipmaps,且FilterMode.Trilinear
                 waters.setTexture("_rivertexturemap", riverBitmap);
-            }
 
-            {
-                var vertices = new Vector3[mesh.numRegions + mesh.numTriangles];
-                var uvs = new Vector2[mesh.numRegions + mesh.numTriangles];
-                var triangles = new int[3 * mesh.numSolidSides];
-                mapData.setMeshGeometry(vertices);
-                mapData.setMapGeometry(uvs, triangles);
-
-                landzs.setup(vertices, triangles, uvs, shaders[0]);
+                var v32 = bz[1].vertices;
+                var v22 = bz[1].uv;
+                var t32 = bz[1].triangles;
+                landzs.setup(v32, t32, v22, shaders[0]);
                 landzs.setTexture("_vertex_water", rt_WaterColor);
                 //texture = ColorMap.texture();
                 //saveToPng(texture as Texture2D, Application.streamingAssetsPath + "/colormap.png");
                 landzs.setTexture("_ColorMap", colorBitmap);
                 landzs.setTexture("_vertex_land", rt_LandColor);
-            }
+            });
 
             var rt = rtCamera.targetTexture;
 
@@ -118,7 +102,6 @@ namespace Assets
         }
         public Vector3 worldToLandPosition(Vector3 p)
         {
-            needRender++;
             tmpObj.transform.SetParent(null);
             tmpObj.transform.position = p;
             tmpObj.transform.SetParent(transform, true);
@@ -131,7 +114,17 @@ namespace Assets
         public void setup(MeshData mesh, int[] peaks_t, float spacing, int mountain_height = 50)
         {
             mapData = new MapData(mesh, peaks_t, spacing);
-            needRender = 100;
+            worker = new MapWorker(painting, mapData, i =>
+            {
+                //Debug.Log($"worker.process {i}ms");
+                needRender = true;
+            });
+            redraw();
+        }
+
+        public void redraw()
+        {
+            if (worker != null) worker.start();
         }
 
         public void readTargetTexture(Camera camera, Texture2D output)

@@ -96,6 +96,7 @@ namespace Assets
             {
                 var p = mapMesh.getHitPosition();
                 mapMesh.painting.dragPen(p);
+                mapMesh.redraw();
             }
         }
         // Update is called once per frame

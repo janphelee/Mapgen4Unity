@@ -341,7 +341,7 @@ namespace Assets.Map
 
         public void assignRivers()
         {
-            assignDownslope();
+            assignDownslope(); // TODO 这个函数超级耗时的？
             assignMoisture();
             assignFlow();
         }
@@ -367,11 +367,11 @@ namespace Assets.Map
             for (int i = 0; i < t_downslope_s.Length; ++i) t_downslope_s[i] = -999;
 
             var queue = new FlatQueue<int, float>();
-
+            var t1 = DateTime.Now.Ticks;
             /* Part 1: non-shallow ocean triangles get downslope assigned to the lowest neighbor */
             for (var t = 0; t < numTriangles; t++)
             {
-                if (t_elevation[t] < -0.1)
+                if (t_elevation[t] < -0.1f)
                 {
                     int best_s = -1;
                     var best_e = t_elevation[t];
@@ -390,6 +390,7 @@ namespace Assets.Map
                     queue.push(t, t_elevation[t]);
                 }
             }
+            var t2 = DateTime.Now.Ticks;
             /* Part 2: land triangles get visited in elevation priority */
             for (var queue_out = 0; queue_out < numTriangles; queue_out++)
             {
@@ -406,6 +407,8 @@ namespace Assets.Map
                     }
                 }
             }
+            var t3 = DateTime.Now.Ticks;
+            Debug.Log($"assignDownslope triangles:{numTriangles} part1:{t2 - t1} part2:{t3 - t2} qs:{queue.size()}");
         }
         /**
          * @param {Mesh} mesh
@@ -441,7 +444,7 @@ namespace Assets.Map
             var mesh = this.mesh;
             int numTriangles = mesh.numTriangles;
             int[] _halfedges = mesh._halfedges;
-
+            for (var i = 0; i < s_flow.Length; ++i) s_flow[i] = 0;
             for (var t = 0; t < numTriangles; t++)
             {
                 if (t_elevation[t] >= 0)
@@ -516,11 +519,12 @@ namespace Assets.Map
         /**
          * 单个网格顶点数量不能超过 UInt16 MaxValue = 65535
          */
-        public void setMeshGeometry(Vector3[] P)
+        public void setMeshGeometry(out Vector3[] P)
         {
             var mesh = this.mesh;
             int numRegions = mesh.numRegions, numTriangles = mesh.numTriangles;
-            if (P.Length != (numRegions + numTriangles)) { throw new Exception("wrong size"); }
+            P = new Vector3[numRegions + numTriangles];
+            //if (P.Length != (numRegions + numTriangles)) { throw new Exception("wrong size"); }
 
             var p = 0;
             for (var r = 0; r < numRegions; r++)
@@ -533,13 +537,13 @@ namespace Assets.Map
             }
         }
 
-        public void setMapGeometry(Vector2[] E, int[] I)
+        public void setMapGeometry(out Vector2[] E, out int[] I)
         {
-            setElevation(E);
-            setTriangles(I);
+            setElevation(out E);
+            setTriangles(out I);
         }
 
-        private void setElevation(Vector2[] E)
+        private void setElevation(out Vector2[] E)
         {
             // TODO: V should probably depend on the slope, or elevation, or maybe it should be 0.95 in mountainous areas and 0.99 elsewhere
             const float V = 0.95f; // reduce elevation in valleys
@@ -551,7 +555,8 @@ namespace Assets.Map
                 r_rainfall = map.r_rainfall,
                 s_flow = map.s_flow;
             int numSolidSides = mesh.numSolidSides, numRegions = mesh.numRegions, numTriangles = mesh.numTriangles;
-            if (E.Length != (numRegions + numTriangles)) { throw new Exception("wrong size"); }
+            E = new Vector2[numRegions + numTriangles];
+            //if (E.Length != (numRegions + numTriangles)) { throw new Exception("wrong size"); }
 
             var p = 0;
             for (var r = 0; r < numRegions; r++)
@@ -574,12 +579,12 @@ namespace Assets.Map
             if (E.Length != p) { throw new Exception("wrong size"); }
         }
 
-        private void setTriangles(int[] I)
+        private void setTriangles(out int[] I)
         {
             var mesh = this.mesh;
             int numSolidSides = mesh.numSolidSides, numRegions = mesh.numRegions;
-
-            if (I.Length != 3 * numSolidSides) { throw new Exception("wrong size"); }
+            I = new int[3 * numSolidSides];
+            //if (I.Length != 3 * numSolidSides) { throw new Exception("wrong size"); }
 
             // TODO: split this into its own function; it can be updated separately, and maybe not as often
             var i = 0;
@@ -665,20 +670,6 @@ namespace Assets.Map
                 void add(int r, int c, int i, int j, int k)
                 {
                     var T = riverTexturePositions[r][c][0];
-                    /**
-                       P[p    ] = mesh.r_x(r1);
-                       P[p + 1] = mesh.r_y(r1);2  3
-                       P[p + 4] = mesh.r_x(r2);
-                       P[p + 5] = mesh.r_y(r2);6  7
-                       P[p + 8] = mesh.r_x(r3);
-                       P[p + 9] = mesh.r_y(r3);10 11
-                       P[p + 4*(out_s - 3*t) + 2] = T[i].uv[0];
-                       P[p + 4*(out_s - 3*t) + 3] = T[i].uv[1];
-                       P[p + 4*(in1_s - 3*t) + 2] = T[j].uv[0];
-                       P[p + 4*(in1_s - 3*t) + 3] = T[j].uv[1];
-                       P[p + 4*(in2_s - 3*t) + 2] = T[k].uv[0];
-                       P[p + 4*(in2_s - 3*t) + 3] = T[k].uv[1];
-                     */
                     I.Add(p);
                     I.Add(p + 1);
                     I.Add(p + 2);
@@ -710,6 +701,7 @@ namespace Assets.Map
             triangles = I.ToArray();
             vertices = P.ToArray();
             uvs = E.ToArray();
+            Debug.Log($"setRiverGeometry triangles:{vertices.Length / 3}");
         }
 
     }

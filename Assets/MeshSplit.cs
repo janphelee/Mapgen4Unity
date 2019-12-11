@@ -93,9 +93,6 @@ namespace Assets
             return s;
         }
 
-        public Vector3[] vertices { get; set; }
-        public Vector2[] uv { get; set; }
-        public int[] triangles { get; set; }
         private Mesh[] meshes { get; set; }
         private MeshRenderer[] renderers { get; set; }
 
@@ -122,15 +119,12 @@ namespace Assets
                 var v = triangles[i];
                 if (!dic.ContainsKey(v))
                 {
+                    //if (v >= vertices.Length) Debug.Log("v >= vertices.Length");
                     dic[v] = v3.Count;
-                    k1.Add(v3.Count);
                     v3.Add(vertices[v]);
                     v2.Add(uv[v]);
                 }
-                else
-                {
-                    k1.Add(dic[v]);
-                }
+                k1.Add(dic[v]);
 
                 // 检查超过顶点数量
                 if (v3.Count >= short.MaxValue && i % 3 == 2)
@@ -196,9 +190,11 @@ namespace Assets
 
             for (int i = 0; i < meshes.Length; ++i)
             {
+                //! Mesh.vertices is too small https://blog.csdn.net/luckydogyxx/article/details/83302823
+                meshes[i].Clear();
                 meshes[i].vertices = vv3[i];
-                meshes[i].uv = vv2[i];
                 meshes[i].triangles = vk1[i];
+                meshes[i].uv = vv2[i];
             }
         }
 
