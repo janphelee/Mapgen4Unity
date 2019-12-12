@@ -157,11 +157,12 @@ namespace Assets
                 var vr = new List<MeshRenderer>(renderers);
                 while (vr.Count > vk1.Count)
                 {
-                    var r = vr[vr.Count - 1];
+                    var idx = vr.Count - 1;
+                    var r = vr[idx];
+                    vr.RemoveAt(idx);
+                    vm.RemoveAt(idx);
                     r.gameObject.SetActive(false);
                     Destroy(r.gameObject);
-                    vr.RemoveAt(vr.Count - 1);
-                    vm.RemoveAt(vr.Count - 1);
                 }
                 while (vr.Count < vk1.Count)
                 {

@@ -25,6 +25,7 @@ namespace Assets.Map
 
         public _Mesh landsBuffer = new _Mesh();
         public _Mesh waterBuffer = new _Mesh();
+        private object lockObj = new object();
 
         public MapWorker(MapPainting painting, MapData mapData, Callback callback)
         {
@@ -47,7 +48,7 @@ namespace Assets.Map
         }
         public void getBuffer(CallbackBuffer callback)
         {
-            lock (this)
+            lock (lockObj)
             {
                 callback?.Invoke(0, new _Mesh[] { waterBuffer, landsBuffer });
             }
@@ -61,7 +62,7 @@ namespace Assets.Map
             mapData.assignRainfall();//风带植被
             mapData.assignRivers();//河流
 
-            lock (this)
+            lock (lockObj)
             {
                 mapData.setRiverGeometry(out waterBuffer.vertices, out waterBuffer.uv, out waterBuffer.triangles);
                 mapData.setMeshGeometry(out landsBuffer.vertices);
