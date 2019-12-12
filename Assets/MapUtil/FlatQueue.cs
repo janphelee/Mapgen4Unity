@@ -3,21 +3,18 @@ using System.Collections.Generic;
 
 namespace Assets.MapUtil
 {
-    /**
-     * 这个类只是测试用的，比较 a.数组跟list b.int跟float 大数据处理时候的区别
-     */
-    public class FlatQueue2
+    public class FlatQueue
     {
         class _Flat
         {
             public int id { get; set; }
-            public int value { get; set; }
+            public float value { get; set; }
         }
 
         private List<_Flat> flat { get; set; }
         private int length { get; set; }
 
-        public FlatQueue2()
+        public FlatQueue()
         {
             flat = new List<_Flat>();
             length = 0;
@@ -35,11 +32,6 @@ namespace Assets.MapUtil
         }
 
         public void push(int id, float value)
-        {
-            push(id, (int)(value * 10000));
-        }
-
-        public void push(int id, int value)
         {
             flat.Add(new _Flat() { id = id, value = value });
             int pos = length++;

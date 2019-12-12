@@ -13,8 +13,8 @@ namespace Assets.Map
             public Vector2[] uv;
         }
 
-        public delegate void Callback(int code);
-        public delegate void CallbackBuffer(int code, _Mesh[] buffers);
+        public delegate void Callback(int i);
+        public delegate void CallbackBuffer(int i, _Mesh[] buffers);
 
         private MapPainting painting { get; set; }
         private MapData mapData { get; set; }
@@ -54,6 +54,7 @@ namespace Assets.Map
         }
         private void process()
         {
+            var t1 = DateTime.Now.Ticks;
             painting.setElevationParam(/*int seed = 187, float island = 0.5f*/);
 
             mapData.assignElevation(painting);//海拔地势
@@ -66,7 +67,9 @@ namespace Assets.Map
                 mapData.setMeshGeometry(out landsBuffer.vertices);
                 mapData.setMapGeometry(out landsBuffer.uv, out landsBuffer.triangles);
             }
-            callback?.Invoke(0);
+            var t2 = DateTime.Now.Ticks;
+            var elasped = t2 - t1;
+            callback?.Invoke((int)elasped);
 
             if (requestWork)
             {
