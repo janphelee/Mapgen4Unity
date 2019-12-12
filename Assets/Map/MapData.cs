@@ -387,7 +387,7 @@ namespace Assets.Map
                     }
                     order_t[queue_in++] = t;
                     t_downslope_s[t] = best_s;
-                    queue.push(t, t_elevation[t]);
+                    queue.push(t, (int)(t_elevation[t] * 10000));
                 }
             }
             var t2 = DateTime.Now.Ticks;
@@ -403,7 +403,7 @@ namespace Assets.Map
                     {
                         t_downslope_s[neighbor_t] = mesh.s_opposite_s(s);
                         order_t[queue_in++] = neighbor_t;
-                        queue.push(neighbor_t, t_elevation[neighbor_t]);
+                        queue.push(neighbor_t, (int)(t_elevation[neighbor_t] * 10000));
                     }
                 }
             }

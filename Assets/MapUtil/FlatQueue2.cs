@@ -7,7 +7,7 @@ namespace Assets.MapUtil
         class _Flat
         {
             public int id { get; set; }
-            public float value { get; set; }
+            public int value { get; set; }
         }
 
         private _Flat[] flat { get; set; }
@@ -29,7 +29,7 @@ namespace Assets.MapUtil
             return length;
         }
 
-        public void push(int id, float value)
+        public void push(int id, int value)
         {
             flat[length] = new _Flat() { id = id, value = value };
             int pos = length++;
