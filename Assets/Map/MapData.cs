@@ -366,7 +366,7 @@ namespace Assets.Map
             // t_downslope_s.fill(-999);
             for (int i = 0; i < t_downslope_s.Length; ++i) t_downslope_s[i] = -999;
 
-            var queue = new FlatQueue<int, float>();
+            var queue = new FlatQueue2();
             var t1 = DateTime.Now.Ticks;
             /* Part 1: non-shallow ocean triangles get downslope assigned to the lowest neighbor */
             for (var t = 0; t < numTriangles; t++)
