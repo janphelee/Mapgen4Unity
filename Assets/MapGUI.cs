@@ -55,6 +55,8 @@ namespace Assets
         { "outline_water",new float[]{10,0,20} },// things start going wrong when this is high
         { "biome_colors",new float[]{1,0,1} },
     };
+        private int selected1 { get; set; }
+        private int selected2 { get; set; }
 
         /// <summary>主窗口尺寸</summary>
         private Rect clientRect { get; set; }
@@ -64,6 +66,9 @@ namespace Assets
         private bool activeUI { get; set; }
         private Camera mainCamera { get; set; }
         private Vector3 eulerAngles { get; set; }
+
+        private string[] sizeTxts { get; set; }
+        private string[] toolTxts { get; set; }
 
         // Start is called before the first frame update
         void Start()
@@ -79,6 +84,12 @@ namespace Assets
             mainCamera = Camera.main;
             eulerAngles = transform.parent.localEulerAngles;
 
+            sizeTxts = new string[mapMesh.painting.SIZES.Count];
+            mapMesh.painting.SIZES.Keys.CopyTo(sizeTxts, 0);
+
+            toolTxts = new string[mapMesh.painting.TOOLS.Count];
+            mapMesh.painting.TOOLS.Keys.CopyTo(toolTxts, 0);
+
             activeUI = true;
         }
 
@@ -90,12 +101,12 @@ namespace Assets
             if (Input.GetMouseButtonDown(0))
             {
                 var p = mapMesh.getHitPosition();
-                mapMesh.painting.startPen(p);
+                mapMesh.painting.startPen(p, sizeTxts[selected1], toolTxts[selected2]);
             }
             else if (Input.GetMouseButton(0))
             {
                 var p = mapMesh.getHitPosition();
-                mapMesh.painting.dragPen(p);
+                mapMesh.painting.dragPen(p, sizeTxts[selected1], toolTxts[selected2]);
                 mapMesh.redraw();
             }
         }
@@ -115,9 +126,13 @@ namespace Assets
 
         private void WindowFunction(int windowId)
         {
-            int i = 0;
+            GUILayout.Label("笔刷大小");
+            selected1 = GUILayout.Toolbar(selected1, sizeTxts);
+            GUILayout.Label("地形");
+            selected2 = GUILayout.Toolbar(selected2, toolTxts);
 
             scrollPosition = GUILayout.BeginScrollView(scrollPosition);
+            int i = 0;
             foreach (var k in mapParams)
             {
                 GUILayout.BeginHorizontal();

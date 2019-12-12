@@ -95,19 +95,19 @@ namespace Assets.Map
         }
         public readonly Dictionary<string, Size> SIZES = new Dictionary<string, Size>()
         {
-            {"small",  new Size(){ key=1,rate=8,innerRadius=2,outerRadius=6}},
-            {"medium", new Size(){ key=2,rate=5,innerRadius=5,outerRadius=10}},
-            {"large",  new Size(){ key=3,rate=3,innerRadius=10,outerRadius=16}},
+            {"小02",  new Size(){ key=1,rate=8,innerRadius=2,outerRadius=6}},
+            {"中05", new Size(){ key=2,rate=5,innerRadius=5,outerRadius=10}},
+            {"大10",  new Size(){ key=3,rate=3,innerRadius=10,outerRadius=16}},
         };
         public class Tool
         {
             public float elevation { get; set; }
         }
         public readonly Dictionary<string, Tool> TOOLS = new Dictionary<string, Tool>() {
-            {"ocean",   new Tool(){elevation=-0.25f}},
-            {"shallow", new Tool(){elevation=-0.05f}},
-            {"valley",  new Tool(){elevation=+0.05f}},
-            {"mountain",new Tool(){elevation=+1.00f}}
+            {"海洋", new Tool(){elevation=-0.25f}},
+            {"湖水", new Tool(){elevation=-0.05f}},
+            {"平原", new Tool(){elevation=+0.05f}},
+            {"山峰", new Tool(){elevation=+1.00f}}
         };
 
         /**
@@ -158,18 +158,18 @@ namespace Assets.Map
             this.userHasPainted = true;
         }
 
-        public void startPen(Vector2 p)
+        public void startPen(Vector2 p, string s1, string s2)
         {
             reset(currentStrokeTime, 0);
             reset(currentStrokeStrength, 0);
             elevation.CopyTo(currentStrokePreviousElevation, 0);
 
-            dragPen(p);
+            dragPen(p, s1, s2);
         }
 
-        public void dragPen(Vector2 p)
+        public void dragPen(Vector2 p, string s1, string s2)
         {
-            paintAt(TOOLS["mountain"], p.x, p.y, SIZES["small"], Time.deltaTime);
+            paintAt(TOOLS[s2], p.x, p.y, SIZES[s1], Time.deltaTime);
         }
 
         private void reset<T>(T[] a, T b)
