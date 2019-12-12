@@ -103,6 +103,14 @@ namespace Assets
         private void OnGUI()
         {
             if (activeUI) clientRect = GUI.Window(10086, clientRect, WindowFunction, "地图参数");
+
+            string txt = "";
+            var tt = mapMesh.editTicks.ToArray();
+            for (int i = 0; i < tt.Length; ++i)
+            {
+                txt += "" + tt[i] / 10000 + "ms\n";
+            }
+            GUILayout.Label(txt);
         }
 
         private void WindowFunction(int windowId)

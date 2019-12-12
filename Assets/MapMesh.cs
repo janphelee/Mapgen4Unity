@@ -1,6 +1,7 @@
 ﻿using Assets.DualMesh;
 using Assets.Map;
 using Assets.MapUtil;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -111,12 +112,14 @@ namespace Assets
             return sp;
         }
 
+        public readonly List<int> editTicks = new List<int>();
         public void setup(MeshData mesh, int[] peaks_t, float spacing, int mountain_height = 50)
         {
             mapData = new MapData(mesh, peaks_t, spacing);
             worker = new MapWorker(painting, mapData, i =>
             {
-                //Debug.Log($"worker.process {i}ms");
+                editTicks.Add(i);
+                if (editTicks.Count > 5) editTicks.RemoveAt(0);
                 needRender = true;
             });
             redraw();

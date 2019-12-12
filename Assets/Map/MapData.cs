@@ -215,7 +215,7 @@ namespace Assets.Map
             for (var t = 0; t < numTriangles; t++)
             {
                 double e = t_elevation[t];
-                if (e > 0.0)
+                if (e > 0)
                 {
                     /* Mix two sources of elevation:
                      *
@@ -238,7 +238,7 @@ namespace Assets.Map
                     var em = 1 - mountain_slope / 1000.0 * t_mountain_distance[t];
                     if (em < 0.01) { em = 0.01; }
                     var weight = e * e;
-                    e = (1 - weight) * eh + weight * em;
+                    e = (1.0 - weight) * eh + weight * em;
                 }
                 else
                 {
@@ -265,7 +265,7 @@ namespace Assets.Map
                 var incoming = s0;
                 do
                 {
-                    var t = (incoming / 3) | 0;
+                    var t = incoming / 3;
                     e += t_elevation[t];
                     water = water || t_elevation[t] < 0;
                     var outgoing = MeshData.s_next_s(incoming);
@@ -354,6 +354,7 @@ namespace Assets.Map
          * @param {Int32Array} order_t - OUT parameter - pre-order in which the graph was traversed,
          *   so roots of the tree always get visited before leaves; use reverse to visit leaves before roots
          */
+        FlatQueue queue = new FlatQueue();
         private void assignDownslope()
         {
             /* Use a priority queue, starting with the ocean triangles and
@@ -366,8 +367,6 @@ namespace Assets.Map
             // t_downslope_s.fill(-999);
             for (int i = 0; i < t_downslope_s.Length; ++i) t_downslope_s[i] = -999;
 
-            var queue = new FlatQueue2();
-            var t1 = DateTime.Now.Ticks;
             /* Part 1: non-shallow ocean triangles get downslope assigned to the lowest neighbor */
             for (var t = 0; t < numTriangles; t++)
             {
@@ -390,7 +389,6 @@ namespace Assets.Map
                     queue.push(t, t_elevation[t]);
                 }
             }
-            var t2 = DateTime.Now.Ticks;
             /* Part 2: land triangles get visited in elevation priority */
             for (var queue_out = 0; queue_out < numTriangles; queue_out++)
             {
@@ -407,8 +405,6 @@ namespace Assets.Map
                     }
                 }
             }
-            var t3 = DateTime.Now.Ticks;
-            Debug.Log($"assignDownslope triangles:{numTriangles} part1:{t2 - t1} part2:{t3 - t2} qs:{queue.size()}");
         }
         /**
          * @param {Mesh} mesh
@@ -701,7 +697,7 @@ namespace Assets.Map
             triangles = I.ToArray();
             vertices = P.ToArray();
             uvs = E.ToArray();
-            Debug.Log($"setRiverGeometry triangles:{vertices.Length / 3}");
+            //Debug.Log($"setRiverGeometry triangles:{vertices.Length / 3}");
         }
 
     }
