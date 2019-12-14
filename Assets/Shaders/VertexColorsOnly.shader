@@ -6,7 +6,13 @@ Shader "Custom/VertexColorsOnly"{
 		_vertex_land("vertex_land", 2D) = "blue" {}
 		_vertex_water("vertex_water", 2D) = "blue" {}
 
-		_MountainHeight("Mountain Height", Range(0.0,250.0)) = 50.0
+		_light_angle_deg("light_angle_deg", Range(0,360)) = 80
+
+		_slope("slope", Range(0,1)) = 0.5
+		_flat("flat", Range(0,5)) = 2.5
+		_ambient("ambient", Range(0.0,1.0)) = 0.25
+		_overhead("overhead", Range(0,60)) = 30.0
+		_mountain_height("mountain_height", Range(0.0,250.0)) = 50.0
 
 		_outline_depth("outline_depth", Range(0.0,2.0)) = 1.0
 		_outline_strength("outline_strength", Range(0.0,30.0)) = 15.0
@@ -14,17 +20,6 @@ Shader "Custom/VertexColorsOnly"{
 		_outline_coast("outline_coast", Range(0,1)) = 0.0
 		_outline_water("outline_water", Range(0.0,20.0)) = 10.0
 		_biome_colors("biome_colors", Range(0,1)) = 1.0
-
-
-		_light_angle_deg("light_angle_deg", Range(0,360)) = 80
-		_rotate_deg("rotate_deg", Range(-180,180)) = 0
-
-		_slope("slope", Range(0,1)) = 0.5
-		_flat("flat", Range(0,5)) = 2.5
-		_ambient("ambient", Range(0.0,1.0)) = 0.25
-		_overhead("overhead", Range(0,60)) = 30.0
-
-
 	}
 	SubShader{
 		Tags { "RenderType" = "Opaque" "Queue" = "Geometry"}
@@ -37,7 +32,7 @@ Shader "Custom/VertexColorsOnly"{
 			#pragma fragment frag
 			#include "UnityCG.cginc"
 
-			float _MountainHeight;
+			float _mountain_height;
 
 			struct v2f {
 				float4 pos:POSITION;
@@ -53,7 +48,7 @@ Shader "Custom/VertexColorsOnly"{
 
 				
 				pos = float4(UnityObjectToViewPos(pos),1);
-				pos += float4(0,max(uv.x, 0.0)*_MountainHeight,-pos.y,1);
+				pos += float4(0,max(uv.x, 0.0)*_mountain_height,-pos.y,1);
 				o.pos = UnityViewToClipPos(pos);
 
 				o.uv = uv;
@@ -83,12 +78,11 @@ Shader "Custom/VertexColorsOnly"{
 
 			sampler2D _vertex_depth;
 
-			float _MountainHeight;
+			float _mountain_height;
 
 			float _ambient;
 			float _overhead;
 			float _light_angle_deg;
-			float _rotate_deg;
 			float _slope;
 			float _flat;
 
@@ -125,7 +119,7 @@ Shader "Custom/VertexColorsOnly"{
 				a_xy = float4(UnityObjectToViewPos(a_xy),1);
 				// unity观察系的z方向，unity观察系是右手系，
 				// 其他都是本地坐标，世界坐标，投影坐标都是左手系，所以观察系轴反向
-				a_xy += float4(0,max(a_em.x, 0.0)*_MountainHeight,-a_xy.y,1);//增加深度-a_xy.y，越靠近屏幕下方越后渲染
+				a_xy += float4(0,max(a_em.x, 0.0)*_mountain_height,-a_xy.y,1);//增加深度-a_xy.y，越靠近屏幕下方越后渲染
 				o.pos = UnityViewToClipPos(a_xy);
 				///////////////////////////////////////////////////
 

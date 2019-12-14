@@ -103,15 +103,17 @@ namespace Assets.Map
         float mountainJaggedness { get; set; }
         float windAngleDeg { get; set; }
 
-        float[] t_elevation { get; set; }
-        float[] r_elevation { get; set; }
-        float[] r_humidity { get; set; }
-        float[] t_moisture { get; set; }
-        float[] r_rainfall { get; set; }
-        int[] t_downslope_s { get; set; }
+        float[] t_elevation { get; set; }//海拔三角形
+        float[] r_elevation { get; set; }//海拔区域
+
+        float[] r_humidity { get; set; }//湿度
+        float[] r_rainfall { get; set; }//降雨量区域
+        float[] t_moisture { get; set; }//降雨量三角形
+
+        int[] t_downslope_s { get; set; }//三角形低海拔的边
         int[] order_t { get; set; }
-        float[] t_flow { get; set; }
-        float[] s_flow { get; set; }
+        float[] t_flow { get; set; }//水流量
+        float[] s_flow { get; set; }//水流量
         int[] wind_order_r { get; set; }
         float[] r_wind_sort { get; set; }
         float[] t_mountain_distance { get; set; }
@@ -372,20 +374,20 @@ namespace Assets.Map
             {
                 if (t_elevation[t] < -0.1f)
                 {
-                    int best_s = -1;
-                    var best_e = t_elevation[t];
+                    int lowest_side = -1;
+                    var lowest_elevation = t_elevation[t];
                     for (var j = 0; j < 3; j++)
                     {
-                        int s = 3 * t + j;
-                        var e = t_elevation[mesh.s_outer_t(s)];
-                        if (e < best_e)
+                        int side = 3 * t + j;
+                        var elevation = t_elevation[mesh.s_outer_t(side)];
+                        if (elevation < lowest_elevation)
                         {
-                            best_e = e;
-                            best_s = s;
+                            lowest_elevation = elevation;
+                            lowest_side = side;
                         }
                     }
                     order_t[queue_in++] = t;
-                    t_downslope_s[t] = best_s;
+                    t_downslope_s[t] = lowest_side;
                     queue.push(t, t_elevation[t]);
                 }
             }
@@ -395,12 +397,12 @@ namespace Assets.Map
                 int current_t = queue.pop();
                 for (var j = 0; j < 3; j++)
                 {
-                    var s = 3 * current_t + j;
-                    var neighbor_t = mesh.s_outer_t(s); // uphill from current_t
+                    var side = 3 * current_t + j;
+                    var neighbor_t = mesh.s_outer_t(side); // uphill from current_t
                     if (t_downslope_s[neighbor_t] == -999)
                     {
-                        t_downslope_s[neighbor_t] = mesh.s_opposite_s(s);
                         order_t[queue_in++] = neighbor_t;
+                        t_downslope_s[neighbor_t] = mesh.s_opposite_s(side);
                         queue.push(neighbor_t, t_elevation[neighbor_t]);
                     }
                 }
@@ -441,6 +443,7 @@ namespace Assets.Map
             int numTriangles = mesh.numTriangles;
             int[] _halfedges = mesh._halfedges;
             for (var i = 0; i < s_flow.Length; ++i) s_flow[i] = 0;
+            Array.Clear(s_flow, 0, s_flow.Length);
             for (var t = 0; t < numTriangles; t++)
             {
                 if (t_elevation[t] >= 0)
@@ -456,14 +459,16 @@ namespace Assets.Map
             {
                 var tributary_t = order_t[i];
                 var flow_s = t_downslope_s[tributary_t];
-                var trunk_t = flow_s < 0 ? 0 : (_halfedges[flow_s] / 3);
                 if (flow_s >= 0)// 可能有未重新赋值的-999
                 {
-                    t_flow[trunk_t] += t_flow[tributary_t];
+                    var neighbor_t = mesh.s_outer_t(flow_s);
+                    //var neighbor_t = _halfedges[flow_s] / 3;
+
+                    t_flow[neighbor_t] += t_flow[tributary_t];
                     s_flow[flow_s] += t_flow[tributary_t]; // TODO: s_flow[t_downslope_s[t]] === t_flow[t]; redundant?
-                    if (t_elevation[trunk_t] > t_elevation[tributary_t] && t_elevation[tributary_t] >= 0)
+                    if (t_elevation[neighbor_t] > t_elevation[tributary_t] && t_elevation[tributary_t] >= 0)
                     {
-                        t_elevation[trunk_t] = t_elevation[tributary_t];
+                        t_elevation[neighbor_t] = t_elevation[tributary_t];
                     }
                 }
             }
@@ -648,10 +653,10 @@ namespace Assets.Map
             int p = 0;
             for (var t = 0; t < numSolidTriangles; t++)
             {
-                var out_s = t_downslope_s[t];
+                var out_s = t_downslope_s[t];//@array
                 if (out_s < 0) continue;
 
-                var out_flow = s_flow[out_s];
+                var out_flow = s_flow[out_s];//@array
                 if (out_flow < MIN_FLOW) continue;
 
                 int r1 = mesh.s_begin_r(3 * t),
