@@ -12,7 +12,7 @@ namespace Assets
     {
         private float jitter = 0.5f;
         private float spacing = 5f;
-        private int seed = 187;
+        public int seed = 187;
 
         [SerializeField]
         private MapMesh mapMesh = null;
@@ -31,40 +31,9 @@ namespace Assets
                 Debug.Log($"dphe points:{points_f.Count} peaks:{peaks_index.Length}");
 
                 var builder = new MeshBuilder(spacing * 1.5f).addPoints(points_f);
-                var mesh = builder.create();
-                Debug.Log($"triangles = {mesh.numTriangles} regions = {mesh.numRegions}");
+                var graph = builder.create();
 
-                mesh.s_length = new float[mesh.numSides];
-                for (var s = 0; s < mesh.numSides; s++)
-                {
-                    int r1 = mesh.s_begin_r(s),
-                        r2 = mesh.s_end_r(s);
-                    float dx = mesh.r_x(r1) - mesh.r_x(r2),
-                        dy = mesh.r_y(r1) - mesh.r_y(r2);
-                    mesh.s_length[s] = (float)Math.Sqrt(dx * dx + dy * dy);
-                }
-
-                /* The input points get assigned to different positions in the
-                 * output mesh. The peaks_index has indices into the original
-                 * array. This test makes sure that the logic for mapping input
-                 * indices to output indices hasn't changed. */
-                short p1 = points[210 * 2], p2 = points[210 * 2 + 1];
-                short
-                p3 = (short)Math.Round(mesh.r_x(210 + mesh.numBoundaryRegions)),
-                p4 = (short)Math.Round(mesh.r_y(210 + mesh.numBoundaryRegions));
-                if (p1 != p3 || p2 != p4)
-                {
-                    Debug.Log($"Mapping from input points to output points has changed p:{p1},{p2} r:{p3},{p4}");
-                }
-
-                var peaks_t = new List<int>();
-                foreach (var i in peaks_index)
-                {
-                    var r = i + mesh.numBoundaryRegions;
-                    peaks_t.Add(mesh.s_inner_t(mesh._r_in_s[r]));
-                }
-
-                setup(mesh, peaks_t.ToArray());
+                if (mapMesh != null) mapMesh.setup(seed, graph, peaks_index, spacing);
             });
         }
 
@@ -103,12 +72,6 @@ namespace Assets
                 tmp.Add(new float[] { (float)(points[i * 2] + dx), (float)(points[i * 2 + 1] + dy) });
             }
             return tmp;
-        }
-
-        void setup(MeshData mesh, int[] peaks_t)
-        {
-            if (mapMesh != null)
-                mapMesh.setup(mesh, peaks_t, spacing);
         }
     }
 }

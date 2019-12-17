@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Mathematics;
 
 namespace Assets.DualMesh
 {
@@ -34,7 +35,7 @@ namespace Assets.DualMesh
     {
         public struct Graph
         {
-            public List<float[]> _r_vertex { get; set; }
+            public List<float2> _r_vertex { get; set; }
             public int[] _triangles { get; set; }
             public int[] _halfedges { get; set; }
             public int numBoundaryRegions { get; set; }
@@ -51,7 +52,7 @@ namespace Assets.DualMesh
         }
         public static void checkTriangleInequality(Graph graph)
         {
-            List<float[]> _r_vertex = graph._r_vertex;
+            var _r_vertex = graph._r_vertex;
             int[] _triangles = graph._triangles, _halfedges = graph._halfedges;
 
             // check for skinny triangles
@@ -63,7 +64,7 @@ namespace Assets.DualMesh
                 int r0 = _triangles[s],
                     r1 = _triangles[s_next_s(s)],
                     r2 = _triangles[s_next_s(s_next_s(s))];
-                float[]
+                float2
                     p0 = _r_vertex[r0],
                     p1 = _r_vertex[r1],
                     p2 = _r_vertex[r2];
@@ -90,7 +91,7 @@ namespace Assets.DualMesh
 
         public static void checkMeshConnectivity(Graph graph)
         {
-            List<float[]> _r_vertex = graph._r_vertex;
+            var _r_vertex = graph._r_vertex;
             int[] _triangles = graph._triangles, _halfedges = graph._halfedges;
 
             // 1. make sure each side's opposite is back to itself
@@ -165,8 +166,8 @@ namespace Assets.DualMesh
                 }
             }
 
-            var r_vertex_ghost = new List<float[]>(_r_vertex);
-            r_vertex_ghost.Add(new float[] { 500, 500 });
+            var r_vertex_ghost = new List<float2>(_r_vertex);
+            r_vertex_ghost.Add(new float2(500, 500));
 
             // 代表 _r_vertex.index
             var _triangles_r = new int[numSolidSides + 3 * numUnpairedSides];
@@ -254,7 +255,7 @@ namespace Assets.DualMesh
         }
 
         /** Build and return a TriangleMesh */
-        public MeshData create(bool runChecks = false)
+        public Graph create(bool runChecks = false)
         {
             // TODO: use Float32Array instead of this, so that we can
             // construct directly from points read in from a file
@@ -263,7 +264,7 @@ namespace Assets.DualMesh
             UnityEngine.Debug.Log($"delaunator Triangles:{delaunator.triangles.Length} Halfedges:{delaunator.halfedges.Length}");
             var graph = new Graph()
             {
-                _r_vertex = this.points,
+                _r_vertex = this.points.Select(t => new float2(t[0], t[1])).ToList(),
                 _triangles = delaunator.triangles,
                 _halfedges = delaunator.halfedges
             };
@@ -278,10 +279,11 @@ namespace Assets.DualMesh
             graph.numBoundaryRegions = this.numBoundaryRegions;
             if (runChecks)
             {
+
                 checkMeshConnectivity(graph);
             }
 
-            return new MeshData(graph);
+            return graph;
         }
     }
 }

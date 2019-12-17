@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Assets.MapJobs;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Assets
@@ -76,11 +77,11 @@ namespace Assets
             mainCamera = Camera.main;
             eulerAngles = transform.parent.localEulerAngles;
 
-            sizeTxts = new string[mapMesh.painting.SIZES.Count];
-            mapMesh.painting.SIZES.Keys.CopyTo(sizeTxts, 0);
+            sizeTxts = new string[MapPaint.SIZES.Count];
+            MapPaint.SIZES.Keys.CopyTo(sizeTxts, 0);
 
-            toolTxts = new string[mapMesh.painting.TOOLS.Count];
-            mapMesh.painting.TOOLS.Keys.CopyTo(toolTxts, 0);
+            toolTxts = new string[MapPaint.TOOLS.Count];
+            MapPaint.TOOLS.Keys.CopyTo(toolTxts, 0);
 
             activeUI = true;
         }
@@ -117,10 +118,10 @@ namespace Assets
             if (activeUI) clientRect = GUI.Window(10086, clientRect, WindowFunction, "地图参数");
 
             string txt = $"{Input.mousePosition}\n";
-            var tt = mapMesh.editTicks.ToArray();
+            var tt = mapMesh.elapsedMs.ToArray();
             for (int i = 0; i < tt.Length; ++i)
             {
-                txt += "" + tt[i] / 10000 + "ms\n";
+                txt += "" + tt[i] + "ms\n";
             }
             GUILayout.Label(txt);
         }
