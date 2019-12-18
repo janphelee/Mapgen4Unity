@@ -24,7 +24,7 @@ namespace Assets
 
         private bool needRender { get; set; }
         private GameObject tmpObj { get; set; }
-        private Camera mainCamera { get; set; }
+        public Camera mainCamera { get; private set; }
 
         public RenderTexture renderTexture { get; private set; }
 
@@ -99,7 +99,7 @@ namespace Assets
 
             rtCamera.targetTexture = rt;
 
-            mainCamera.Render();
+            render();
         }
 
         public Vector3 getHitPosition()
@@ -147,7 +147,7 @@ namespace Assets
             config.island = 0.5f;
             config.spacing = spacing;
 
-            redraw();
+            genereate();
         }
 
         public _MapJobs.Config config;
@@ -161,7 +161,7 @@ namespace Assets
 
         private bool working = false;
         private bool requestJob = false;
-        public void redraw()
+        public void genereate()
         {
             if (working)
             {
@@ -175,8 +175,13 @@ namespace Assets
             {
                 onCallback(t);
                 working = false;
-                if (requestJob) redraw();
+                if (requestJob) genereate();
             });
+        }
+
+        public void render()
+        {
+            mainCamera.Render();
         }
 
 

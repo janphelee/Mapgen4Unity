@@ -57,14 +57,13 @@ namespace Assets
 
         private MapMesh mapMesh { get; set; }
         private bool activeUI { get; set; }
-        private Camera mainCamera { get; set; }
         private Vector3 eulerAngles { get; set; }
 
         private string[] sizeTxts { get; set; }
         private string[] toolTxts { get; set; }
 
         // Start is called before the first frame update
-        void Start()
+        void Awake()
         {
             var d = 10f;
             var w = 200f;
@@ -74,7 +73,6 @@ namespace Assets
             scrollPosition = Vector2.zero;
 
             mapMesh = GetComponent<MapMesh>();
-            mainCamera = Camera.main;
             eulerAngles = transform.parent.localEulerAngles;
 
             sizeTxts = new string[MapPaint.SIZES.Count];
@@ -109,7 +107,7 @@ namespace Assets
             {
                 var p = mapMesh.getHitPosition();
                 mapMesh.painting.dragPen(p, sizeTxts[selected1], toolTxts[selected2]);
-                mapMesh.redraw();
+                mapMesh.genereate();
             }
         }
         // Update is called once per frame
@@ -169,16 +167,18 @@ namespace Assets
                 if (!k.Value[0].Equals(val))
                 {
                     k.Value[0] = val;
+
+                    var cam = mapMesh.mainCamera;
                     switch (i)
                     {
                         case 0:
-                            mainCamera.orthographicSize = val;
+                            cam.orthographicSize = val;
                             break;
                         case 1:
                         case 2:
-                            var pos = mainCamera.transform.localPosition;
+                            var pos = cam.transform.localPosition;
                             if (i == 1) pos.x = val; else pos.y = val;
-                            mainCamera.transform.localPosition = pos;
+                            cam.transform.localPosition = pos;
                             break;
                         case 3:
                         case 4:
@@ -190,6 +190,7 @@ namespace Assets
                             mapMesh.landzs.setFloat($"_{k.Key}", val);
                             break;
                     }
+                    mapMesh.render();
                 }
                 GUILayout.Label(k.Value[0].ToString());
 
