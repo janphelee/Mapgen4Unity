@@ -1,31 +1,34 @@
-﻿using Unity.Burst;
+﻿using System;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
 
 namespace Assets.MapJobs
 {
+    using Float = Double;
+    using Float2 = double2;
+
     class PreNoise
     {
-        public NativeArray<float> t_noise0 { get; set; }
-        public NativeArray<float> t_noise1 { get; set; }
-        public NativeArray<float> t_noise2 { get; set; }
-        public NativeArray<float> t_noise3 { get; set; }
-        public NativeArray<float> t_noise4 { get; set; }
-        public NativeArray<float> t_noise5 { get; set; }
-        public NativeArray<float> t_noise6 { get; set; }
+        public NativeArray<Float> t_noise0 { get; set; }
+        public NativeArray<Float> t_noise1 { get; set; }
+        public NativeArray<Float> t_noise2 { get; set; }
+        public NativeArray<Float> t_noise3 { get; set; }
+        public NativeArray<Float> t_noise4 { get; set; }
+        public NativeArray<Float> t_noise5 { get; set; }
+        public NativeArray<Float> t_noise6 { get; set; }
 
         private bool initArray { get; set; }
 
         private void init(int numTriangles)
         {
-            t_noise0 = new NativeArray<float>(numTriangles, Allocator.Persistent);
-            t_noise1 = new NativeArray<float>(numTriangles, Allocator.Persistent);
-            t_noise2 = new NativeArray<float>(numTriangles, Allocator.Persistent);
-            t_noise3 = new NativeArray<float>(numTriangles, Allocator.Persistent);
-            t_noise4 = new NativeArray<float>(numTriangles, Allocator.Persistent);
-            t_noise5 = new NativeArray<float>(numTriangles, Allocator.Persistent);
-            t_noise6 = new NativeArray<float>(numTriangles, Allocator.Persistent);
+            t_noise0 = new NativeArray<Float>(numTriangles, Allocator.Persistent);
+            t_noise1 = new NativeArray<Float>(numTriangles, Allocator.Persistent);
+            t_noise2 = new NativeArray<Float>(numTriangles, Allocator.Persistent);
+            t_noise3 = new NativeArray<Float>(numTriangles, Allocator.Persistent);
+            t_noise4 = new NativeArray<Float>(numTriangles, Allocator.Persistent);
+            t_noise5 = new NativeArray<Float>(numTriangles, Allocator.Persistent);
+            t_noise6 = new NativeArray<Float>(numTriangles, Allocator.Persistent);
         }
 
         public void Dispose()
@@ -42,7 +45,7 @@ namespace Assets.MapJobs
             }
         }
 
-        public JobPrecomputedNoise create(SimplexNoise simplex, NativeArray<float2> _t_vertex)
+        public JobPrecomputedNoise create(SimplexNoise simplex, NativeArray<Float2> _t_vertex)
         {
             var numTriangles = _t_vertex.Length;
 
@@ -67,7 +70,7 @@ namespace Assets.MapJobs
             return job;
         }
 
-        public JobHandle precomputed(SimplexNoise simplex, NativeArray<float2> _t_vertex, JobHandle other)
+        public JobHandle precomputed(SimplexNoise simplex, NativeArray<Float2> _t_vertex, JobHandle other)
         {
             var numTriangles = _t_vertex.Length;
 

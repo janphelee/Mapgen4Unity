@@ -1,9 +1,14 @@
-﻿using Unity.Collections;
+﻿using System;
+using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
+using Unity.Mathematics;
 
 namespace Assets.MapJobs
 {
+    using Float = Double;
+    using Float2 = double2;
+
     unsafe struct Job6SetFlowOutSide : IJob
     {
         public float MIN_FLOW;
@@ -12,7 +17,7 @@ namespace Assets.MapJobs
         [NativeDisableUnsafePtrRestriction] public int* t_downslope_s;
 
         [ReadOnly] public NativeArray<int> _halfedges;
-        [ReadOnly] public NativeArray<float> s_flow;
+        [ReadOnly] public NativeArray<Float> s_flow;
 
         [WriteOnly] public NativeArray<int> flow_out_s;
         [WriteOnly] public NativeArray<int> result;

@@ -1,4 +1,5 @@
-﻿using Unity.Collections;
+﻿using System;
+using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using Unity.Mathematics;
@@ -6,6 +7,8 @@ using UnityEngine;
 
 namespace Assets.MapJobs
 {
+    using Float = Double;
+
     unsafe struct Job8SetMapElevation : IJobParallelFor
     {
         // TODO: V should probably depend on the slope, or elevation, 
@@ -15,9 +18,9 @@ namespace Assets.MapJobs
         public int numRegions;
 
         [NativeDisableUnsafePtrRestriction] public int* _triangles;
-        [NativeDisableUnsafePtrRestriction] public float* r_elevation;
-        [NativeDisableUnsafePtrRestriction] public float* r_rainfall;
-        [NativeDisableUnsafePtrRestriction] public float* t_elevation;
+        [NativeDisableUnsafePtrRestriction] public Float* r_elevation;
+        [NativeDisableUnsafePtrRestriction] public Float* r_rainfall;
+        [NativeDisableUnsafePtrRestriction] public Float* t_elevation;
 
         [WriteOnly] public NativeArray<Vector2> uv;
 
@@ -30,7 +33,7 @@ namespace Assets.MapJobs
         {
             if (i < numRegions)
             {
-                return new Vector2(r_elevation[i], r_rainfall[i]);
+                return new Vector2((float)r_elevation[i], (float)r_rainfall[i]);
             }
             else
             {
@@ -41,7 +44,7 @@ namespace Assets.MapJobs
                     r2 = s_begin_r(s0 + 1),
                     r3 = s_begin_r(s0 + 2);
                 var y = 1f / 3 * (r_rainfall[r1] + r_rainfall[r2] + r_rainfall[r3]);
-                return new Vector2(x, y);
+                return new Vector2((float)x, (float)y);
             }
         }
         private int s_begin_r(int s) { return _triangles[s]; }

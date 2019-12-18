@@ -1,19 +1,24 @@
-﻿using Unity.Collections;
+﻿using System;
+using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
+using Unity.Mathematics;
 
 namespace Assets.MapJobs
 {
+    using Float = Double;
+    using Float2 = double2;
+
     unsafe struct Job4AssignTriangleMoisture : IJobParallelFor
     {
         [NativeDisableUnsafePtrRestriction] public int* _triangles;
-        [NativeDisableUnsafePtrRestriction] public float* r_rainfall;
+        [NativeDisableUnsafePtrRestriction] public Float* r_rainfall;
 
-        [WriteOnly] public NativeArray<float> t_moisture;
+        [WriteOnly] public NativeArray<Float> t_moisture;
 
         public void Execute(int index)
         {
-            var moisture = 0.0f;
+            var moisture = 0.0;
             for (var i = 0; i < 3; i++)
             {
                 int s = 3 * index + i,

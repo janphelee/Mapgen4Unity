@@ -6,18 +6,21 @@ using Unity.Mathematics;
 
 namespace Assets.MapJobs
 {
+    using Float = Double;
+    using Float2 = double2;
+
     unsafe struct Job2AssignSolidTriangle : IJobParallelFor
     {
-        [NativeDisableUnsafePtrRestriction] public float* elevation;
+        [NativeDisableUnsafePtrRestriction] public Float* elevation;
         public int paintSize;
         public float noisy_coastlines;
 
-        [ReadOnly] public NativeArray<float> t_noise4;
-        [ReadOnly] public NativeArray<float> t_noise5;
-        [ReadOnly] public NativeArray<float> t_noise6;
-        [ReadOnly] public NativeArray<float2> t_vertex;
+        [ReadOnly] public NativeArray<Float> t_noise4;
+        [ReadOnly] public NativeArray<Float> t_noise5;
+        [ReadOnly] public NativeArray<Float> t_noise6;
+        [ReadOnly] public NativeArray<Float2> t_vertex;
 
-        [WriteOnly] public NativeArray<float> t_elevation;
+        [WriteOnly] public NativeArray<Float> t_elevation;
 
         public void Execute(int index)
         {
@@ -28,21 +31,21 @@ namespace Assets.MapJobs
             t_elevation[index] = (float)(e + noisy_coastlines * (1 - e * e * e * e) * (t_noise4[index] + t_noise5[index] / 2 + t_noise6[index] / 4));
         }
 
-        private float vertex_x(int i) { return t_vertex[i][0]; }
-        private float vertex_y(int i) { return t_vertex[i][1]; }
+        private Float vertex_x(int i) { return t_vertex[i][0]; }
+        private Float vertex_y(int i) { return t_vertex[i][1]; }
 
-        private double constraintAt(float x, float y)
+        private Float constraintAt(Float x, Float y)
         {
             // https://en.wikipedia.org/wiki/Bilinear_interpolation
             x *= paintSize; y *= paintSize;
 
             int xInt = (int)Math.Floor(x), yInt = (int)Math.Floor(y);
-            float xFrac = x - xInt, yFrac = y - yInt;
+            Float xFrac = x - xInt, yFrac = y - yInt;
 
             if (0 <= xInt && xInt + 1 < paintSize && 0 <= yInt && yInt + 1 < paintSize)
             {
                 int p = paintSize * yInt + xInt;
-                double
+                Float
                     e00 = elevation[p],
                     e01 = elevation[p + 1],
                     e10 = elevation[p + paintSize],

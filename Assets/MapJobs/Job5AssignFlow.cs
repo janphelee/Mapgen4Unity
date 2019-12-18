@@ -1,25 +1,28 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 
 namespace Assets.MapJobs
 {
+    using Float = Double;
+
     unsafe struct Job5AssignFlow : IJob
     {
-        public float flow;
+        public Float flow;
 
         public int numTriangles;
 
         [NativeDisableUnsafePtrRestriction] public int* _halfedges;
 
-        [NativeDisableUnsafePtrRestriction] public float* t_elevation;
+        [NativeDisableUnsafePtrRestriction] public Float* t_elevation;
 
         [NativeDisableUnsafePtrRestriction] public int* order_t;//缓存用的
         [NativeDisableUnsafePtrRestriction] public int* t_downslope_s;
 
-        [NativeDisableUnsafePtrRestriction] public float* t_moisture;
-        [NativeDisableUnsafePtrRestriction] public float* t_flow;
-        [NativeDisableUnsafePtrRestriction] public float* s_flow;
+        [NativeDisableUnsafePtrRestriction] public Float* t_moisture;
+        [NativeDisableUnsafePtrRestriction] public Float* t_flow;
+        [NativeDisableUnsafePtrRestriction] public Float* s_flow;
 
         public void Execute()
         {
@@ -56,7 +59,7 @@ namespace Assets.MapJobs
                     var out_t = s_outer_t(out_s);
                     t_flow[out_t] += t_flow[t];
                     s_flow[out_s] += t_flow[t]; // TODO: s_flow[t_downslope_s[t]] === t_flow[t]; redundant?
-                    if (t_elevation[out_t] > t_elevation[t] && t_elevation[t] >= 0.0)
+                    if (t_elevation[t] >= 0 && t_elevation[out_t] > t_elevation[t])
                     {
                         t_elevation[out_t] = t_elevation[t];
                     }

@@ -1,16 +1,19 @@
-﻿using Unity.Collections.LowLevel.Unsafe;
+﻿using System;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 
 namespace Assets.MapJobs
 {
+    using Float = Double;
+
     unsafe struct Job8SetMapTriangles : IJobParallelFor
     {
         public int numRegions;
 
         [NativeDisableUnsafePtrRestriction] public int* _triangles;
         [NativeDisableUnsafePtrRestriction] public int* _halfedges;
-        [NativeDisableUnsafePtrRestriction] public float* r_elevation;
-        [NativeDisableUnsafePtrRestriction] public float* s_flow;
+        [NativeDisableUnsafePtrRestriction] public Float* r_elevation;
+        [NativeDisableUnsafePtrRestriction] public Float* s_flow;
 
         [NativeDisableUnsafePtrRestriction] public int* I;
 

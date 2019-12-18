@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using Unity.Collections;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace Assets.MapJobs
 {
-    using Float = Single;
+    using Float = Double;
+    using Float2 = double2;
+
     partial class _MapJobs : IDisposable
     {
         const int CANVAS_SIZE = 128;

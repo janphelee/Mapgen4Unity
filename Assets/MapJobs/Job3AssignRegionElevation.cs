@@ -1,21 +1,24 @@
-﻿using Unity.Collections;
+﻿using System;
+using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 
 namespace Assets.MapJobs
 {
+    using Float = Double;
+
     unsafe struct Job3AssignRegionElevation : IJobParallelFor
     {
         [NativeDisableUnsafePtrRestriction] public int* _r_in_s;
         [NativeDisableUnsafePtrRestriction] public int* _halfedges;
-        [NativeDisableUnsafePtrRestriction] public float* t_elevation;
+        [NativeDisableUnsafePtrRestriction] public Float* t_elevation;
 
-        [WriteOnly] public NativeArray<float> r_elevation;
+        [WriteOnly] public NativeArray<Float> r_elevation;
 
         public void Execute(int index)
         {
             var count = 0;
-            float e = 0;
+            var e = 0.0;
             bool water = false;
             var s0 = _r_in_s[index];
             var incoming = s0;

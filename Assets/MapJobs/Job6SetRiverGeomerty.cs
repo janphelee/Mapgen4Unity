@@ -1,22 +1,26 @@
-﻿using Unity.Collections.LowLevel.Unsafe;
+﻿using System;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 
 namespace Assets.MapJobs
 {
+    using Float = Double;
+    using Float2 = double2;
+
     unsafe struct Job6SetRiverGeomerty : IJobParallelFor
     {
         public int numRiverSizes;
         public float MIN_FLOW;
         public float RIVER_WIDTH;
-        public float spacing;
+        public Float spacing;
 
         [NativeDisableUnsafePtrRestriction] public int* _halfedges;
         [NativeDisableUnsafePtrRestriction] public int* _triangles;
-        [NativeDisableUnsafePtrRestriction] public float2* _r_vertex;
-        [NativeDisableUnsafePtrRestriction] public float* s_flow;
-        [NativeDisableUnsafePtrRestriction] public float* s_length;
+        [NativeDisableUnsafePtrRestriction] public Float2* _r_vertex;
+        [NativeDisableUnsafePtrRestriction] public Float* s_flow;
+        [NativeDisableUnsafePtrRestriction] public Float* s_length;
         [NativeDisableUnsafePtrRestriction] public int* flow_out_s;
         [NativeDisableUnsafePtrRestriction] public int* t_downslope_s;
 
@@ -51,12 +55,12 @@ namespace Assets.MapJobs
             }
         }
 
-        private int riverSize(int s, float flow)
+        private int riverSize(int s, Float flow)
         {
             // TODO: performance: build a table of flow to width
             if (s < 0) { return 1; }
-            var width = Mathf.Sqrt(flow - MIN_FLOW) * spacing * RIVER_WIDTH;
-            var size = Mathf.Ceil(width * numRiverSizes / s_length[s]);
+            var width = Math.Sqrt(flow - MIN_FLOW) * spacing * RIVER_WIDTH;
+            var size = Math.Ceiling(width * numRiverSizes / s_length[s]);
             return Mathf.Clamp((int)size, 1, numRiverSizes);
         }
 
@@ -81,7 +85,7 @@ namespace Assets.MapJobs
         private Vector3 v3(int i)
         {
             var v = _r_vertex[i];
-            return new Vector3(v.x, v.y);
+            return new Vector3((float)v.x, (float)v.y);
         }
 
         private int s_next_s(int s) { return (s % 3 == 2) ? s - 2 : s + 1; }

@@ -4,14 +4,18 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using Unity.Collections;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace Assets.MapJobs
 {
+    using Float = Double;
+    using Float2 = double2;
     using Debug = UnityEngine.Debug;
+
     partial class _MapJobs
     {
-        public static void calculateMountainDistance(int seed, MeshData mesh, int[] peak_t, float spacing, float jaggedness, NativeArray<float> t_distance)
+        public static void calculateMountainDistance(int seed, MeshData mesh, int[] peak_t, Float spacing, Float jaggedness, NativeArray<Float> t_distance)
         {
             int randIndex = 0;
 

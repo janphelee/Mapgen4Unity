@@ -6,12 +6,14 @@ using UnityEngine;
 
 namespace Assets.MapJobs
 {
+    using Float2 = double2;
+
     unsafe struct Job7SetMeshGeomerty : IJobParallelFor
     {
         public int numRegions;
 
-        [NativeDisableUnsafePtrRestriction] public float2* _r_vertex;
-        [NativeDisableUnsafePtrRestriction] public float2* _t_vertex;
+        [NativeDisableUnsafePtrRestriction] public Float2* _r_vertex;
+        [NativeDisableUnsafePtrRestriction] public Float2* _t_vertex;
 
         [WriteOnly] public NativeArray<Vector3> vertex;
 
@@ -25,12 +27,12 @@ namespace Assets.MapJobs
             if (i < numRegions)
             {
                 var v = _r_vertex[i];
-                return new Vector3(v.x, v.y);
+                return new Vector3((float)v.x, (float)v.y);
             }
             else
             {
                 var v = _t_vertex[i - numRegions];
-                return new Vector3(v.x, v.y);
+                return new Vector3((float)v.x, (float)v.y);
             }
         }
     }

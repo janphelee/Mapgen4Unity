@@ -4,22 +4,24 @@ using Unity.Collections.LowLevel.Unsafe;
 
 namespace Assets.MapJobs
 {
+    using Float = Double;
+
     unsafe struct FlatQueue : IDisposable
     {
         private NativeArray<int> __k;
-        private NativeArray<double> __v;
+        private NativeArray<Float> __v;
 
         private int* pk;
-        private double* pv;
+        private Float* pv;
         private int length;
 
         public FlatQueue(int size)
         {
-            __k = new NativeArray<int>(size, Allocator.TempJob);
-            __v = new NativeArray<double>(size, Allocator.TempJob);
+            __k = new NativeArray<int>(size, Allocator.Persistent);
+            __v = new NativeArray<Float>(size, Allocator.Persistent);
 
             pk = (int*)NativeArrayUnsafeUtility.GetUnsafePtr(__k);
-            pv = (double*)NativeArrayUnsafeUtility.GetUnsafePtr(__v);
+            pv = (Float*)NativeArrayUnsafeUtility.GetUnsafePtr(__v);
             length = 0;
         }
 
@@ -29,7 +31,7 @@ namespace Assets.MapJobs
             __v.Dispose();
         }
 
-        public void push(int key, double value)
+        public void push(int key, Float value)
         {
             pk[length] = key;
             pv[length] = value;
@@ -39,7 +41,7 @@ namespace Assets.MapJobs
             {
                 int parent = (pos - 1) >> 1;
                 var parentValue = pv[parent];
-                if (value >= parentValue) break;
+                if (parentValue < value) break;
 
                 pk[pos] = pk[parent];
                 pv[pos] = pv[parent];
@@ -70,9 +72,10 @@ namespace Assets.MapJobs
 
                     var bestIndex = pk[left];
                     var bestValue = pv[left];
+
                     var rightValue = pv[right];
 
-                    if (right < length && rightValue < bestValue)
+                    if (right < length && bestValue > rightValue)
                     {
                         left = right;
                         bestIndex = pk[right];

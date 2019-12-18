@@ -7,6 +7,9 @@ using UnityEngine;
 
 namespace Assets.MapJobs
 {
+    using Float = Double;
+    using Float2 = double2;
+
     partial class _MapJobs
     {
         private void Job1ElevationGenerate(int seed)
@@ -44,7 +47,7 @@ namespace Assets.MapJobs
         {
             var job1 = new Job2AssignSolidTriangle()
             {
-                elevation = (float*)NativeArrayUnsafeUtility.GetUnsafePtr(elevation),
+                elevation = (Float*)NativeArrayUnsafeUtility.GetUnsafePtr(elevation),
                 paintSize = CANVAS_SIZE,
                 noisy_coastlines = noisy_coastlines,
                 t_noise4 = preNoise.t_noise4,
@@ -70,7 +73,7 @@ namespace Assets.MapJobs
             {
                 _r_in_s = (int*)NativeArrayUnsafeUtility.GetUnsafePtr(mesh._r_in_s),
                 _halfedges = (int*)NativeArrayUnsafeUtility.GetUnsafePtr(mesh._halfedges),
-                t_elevation = (float*)NativeArrayUnsafeUtility.GetUnsafePtr(t_elevation),
+                t_elevation = (Float*)NativeArrayUnsafeUtility.GetUnsafePtr(t_elevation),
                 r_elevation = r_elevation,
             };
             Parallel.For(0, mesh.numSolidTriangles, i =>
@@ -136,7 +139,7 @@ namespace Assets.MapJobs
             var job4 = new Job4AssignTriangleMoisture()
             {
                 _triangles = (int*)NativeArrayUnsafeUtility.GetUnsafePtr(mesh._triangles),
-                r_rainfall = (float*)NativeArrayUnsafeUtility.GetUnsafePtr(r_rainfall),
+                r_rainfall = (Float*)NativeArrayUnsafeUtility.GetUnsafePtr(r_rainfall),
                 t_moisture = t_moisture
             };
             job3.Execute();
@@ -146,7 +149,7 @@ namespace Assets.MapJobs
             });
         }
 
-        public unsafe void assignRivers(float flow = 0.2f)
+        public unsafe void assignRivers(Float flow = 0.2f)
         {
             var numTriangles = mesh.numTriangles;
 
@@ -154,7 +157,7 @@ namespace Assets.MapJobs
             {
                 numTriangles = numTriangles,
                 _halfedges = (int*)NativeArrayUnsafeUtility.GetUnsafePtr(mesh._halfedges),
-                t_elevation = (float*)NativeArrayUnsafeUtility.GetUnsafePtr(t_elevation),
+                t_elevation = (Float*)NativeArrayUnsafeUtility.GetUnsafePtr(t_elevation),
                 order_t = (int*)NativeArrayUnsafeUtility.GetUnsafePtr(order_t),
                 t_downslope_s = (int*)NativeArrayUnsafeUtility.GetUnsafePtr(t_downslope_s),
             };
@@ -163,12 +166,12 @@ namespace Assets.MapJobs
                 flow = flow,
                 numTriangles = numTriangles,
                 _halfedges = (int*)NativeArrayUnsafeUtility.GetUnsafePtr(mesh._halfedges),
-                t_elevation = (float*)NativeArrayUnsafeUtility.GetUnsafePtr(t_elevation),
+                t_elevation = (Float*)NativeArrayUnsafeUtility.GetUnsafePtr(t_elevation),
                 order_t = (int*)NativeArrayUnsafeUtility.GetUnsafePtr(order_t),
                 t_downslope_s = (int*)NativeArrayUnsafeUtility.GetUnsafePtr(t_downslope_s),
-                t_moisture = (float*)NativeArrayUnsafeUtility.GetUnsafePtr(t_moisture),
-                t_flow = (float*)NativeArrayUnsafeUtility.GetUnsafePtr(t_flow),
-                s_flow = (float*)NativeArrayUnsafeUtility.GetUnsafePtr(s_flow),
+                t_moisture = (Float*)NativeArrayUnsafeUtility.GetUnsafePtr(t_moisture),
+                t_flow = (Float*)NativeArrayUnsafeUtility.GetUnsafePtr(t_flow),
+                s_flow = (Float*)NativeArrayUnsafeUtility.GetUnsafePtr(s_flow),
             };
             job1.Execute();
             job2.Execute();
@@ -204,9 +207,9 @@ namespace Assets.MapJobs
                 spacing = config.spacing,
                 _halfedges = (int*)NativeArrayUnsafeUtility.GetUnsafePtr(mesh._halfedges),
                 _triangles = (int*)NativeArrayUnsafeUtility.GetUnsafePtr(mesh._triangles),
-                _r_vertex = (float2*)NativeArrayUnsafeUtility.GetUnsafePtr(mesh._r_vertex),
-                s_flow = (float*)NativeArrayUnsafeUtility.GetUnsafePtr(s_flow),
-                s_length = (float*)NativeArrayUnsafeUtility.GetUnsafePtr(mesh.s_length),
+                _r_vertex = (Float2*)NativeArrayUnsafeUtility.GetUnsafePtr(mesh._r_vertex),
+                s_flow = (Float*)NativeArrayUnsafeUtility.GetUnsafePtr(s_flow),
+                s_length = (Float*)NativeArrayUnsafeUtility.GetUnsafePtr(mesh.s_length),
                 flow_out_s = (int*)NativeArrayUnsafeUtility.GetUnsafePtr(flow_out_s),
                 t_downslope_s = (int*)NativeArrayUnsafeUtility.GetUnsafePtr(t_downslope_s),
                 river_uv = (Vector2*)NativeArrayUnsafeUtility.GetUnsafePtr(riverTex.uv),
@@ -233,8 +236,8 @@ namespace Assets.MapJobs
             var job = new Job7SetMeshGeomerty()
             {
                 numRegions = numRegions,
-                _r_vertex = (float2*)NativeArrayUnsafeUtility.GetUnsafePtr(mesh._r_vertex),
-                _t_vertex = (float2*)NativeArrayUnsafeUtility.GetUnsafePtr(mesh._t_vertex),
+                _r_vertex = (Float2*)NativeArrayUnsafeUtility.GetUnsafePtr(mesh._r_vertex),
+                _t_vertex = (Float2*)NativeArrayUnsafeUtility.GetUnsafePtr(mesh._t_vertex),
                 vertex = land_v3,
             };
             Parallel.For(0, numRegions + numTriangles, i =>
@@ -249,9 +252,9 @@ namespace Assets.MapJobs
             {
                 numRegions = mesh.numRegions,
                 _triangles = (int*)NativeArrayUnsafeUtility.GetUnsafePtr(mesh._triangles),
-                r_elevation = (float*)NativeArrayUnsafeUtility.GetUnsafePtr(r_elevation),
-                r_rainfall = (float*)NativeArrayUnsafeUtility.GetUnsafePtr(r_rainfall),
-                t_elevation = (float*)NativeArrayUnsafeUtility.GetUnsafePtr(t_elevation),
+                r_elevation = (Float*)NativeArrayUnsafeUtility.GetUnsafePtr(r_elevation),
+                r_rainfall = (Float*)NativeArrayUnsafeUtility.GetUnsafePtr(r_rainfall),
+                t_elevation = (Float*)NativeArrayUnsafeUtility.GetUnsafePtr(t_elevation),
                 uv = land_uv,
             };
             var job2 = new Job8SetMapTriangles()
@@ -259,8 +262,8 @@ namespace Assets.MapJobs
                 numRegions = mesh.numRegions,
                 _triangles = (int*)NativeArrayUnsafeUtility.GetUnsafePtr(mesh._triangles),
                 _halfedges = (int*)NativeArrayUnsafeUtility.GetUnsafePtr(mesh._halfedges),
-                r_elevation = (float*)NativeArrayUnsafeUtility.GetUnsafePtr(r_elevation),
-                s_flow = (float*)NativeArrayUnsafeUtility.GetUnsafePtr(s_flow),
+                r_elevation = (Float*)NativeArrayUnsafeUtility.GetUnsafePtr(r_elevation),
+                s_flow = (Float*)NativeArrayUnsafeUtility.GetUnsafePtr(s_flow),
                 I = (int*)NativeArrayUnsafeUtility.GetUnsafePtr(land_i),
             };
             Parallel.For(0, land_uv.Length, i =>

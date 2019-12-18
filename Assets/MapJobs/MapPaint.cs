@@ -2,28 +2,32 @@
 using System;
 using System.Collections.Generic;
 using Unity.Collections;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace Assets.MapJobs
 {
+    using Float = Double;
+    using Float2 = double2;
+
     class MapPaint : IDisposable
     {
         public const int CANVAS_SIZE = 128;
 
-        private NativeArray<float> elevation { get; set; }
+        private NativeArray<Float> elevation { get; set; }
         /* currentStroke */
-        private float[] currentStrokePreviousElevation { get; set; }
-        private float[] currentStrokeTime { get; set; }
-        private float[] currentStrokeStrength { get; set; }
+        private Float[] currentStrokePreviousElevation { get; set; }
+        private Float[] currentStrokeTime { get; set; }
+        private Float[] currentStrokeStrength { get; set; }
 
-        public MapPaint(NativeArray<float> elevation)
+        public MapPaint(NativeArray<Float> elevation)
         {
             this.elevation = elevation;
 
             var size = elevation.Length;
-            currentStrokePreviousElevation = new float[size];
-            currentStrokeStrength = new float[size];
-            currentStrokeTime = new float[size];
+            currentStrokePreviousElevation = new Float[size];
+            currentStrokeStrength = new Float[size];
+            currentStrokeTime = new Float[size];
         }
 
         public class Size

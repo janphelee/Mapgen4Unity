@@ -6,6 +6,9 @@ using Unity.Mathematics;
 
 namespace Assets.DualMesh
 {
+    using Float = Double;
+    using Float2 = double2;
+
     /**
      * Build a dual mesh from points, with ghost triangles around the exterior.
      *
@@ -35,7 +38,7 @@ namespace Assets.DualMesh
     {
         public struct Graph
         {
-            public List<float2> _r_vertex { get; set; }
+            public List<Float2> _r_vertex { get; set; }
             public int[] _triangles { get; set; }
             public int[] _halfedges { get; set; }
             public int numBoundaryRegions { get; set; }
@@ -64,12 +67,12 @@ namespace Assets.DualMesh
                 int r0 = _triangles[s],
                     r1 = _triangles[s_next_s(s)],
                     r2 = _triangles[s_next_s(s_next_s(s))];
-                float2
+                Float2
                     p0 = _r_vertex[r0],
                     p1 = _r_vertex[r1],
                     p2 = _r_vertex[r2];
-                var d0 = new float[] { p0[0] - p1[0], p0[1] - p1[1] };
-                var d2 = new float[] { p2[0] - p1[0], p2[1] - p1[1] };
+                var d0 = new Float[] { p0[0] - p1[0], p0[1] - p1[1] };
+                var d2 = new Float[] { p2[0] - p1[0], p2[1] - p1[1] };
                 var dotProduct = d0[0] * d2[0] + d0[1] + d2[1];
                 var angleDegrees = 180 / Math.PI * Math.Acos(dotProduct);
                 if (angleDegrees < badAngleLimit)
@@ -166,8 +169,8 @@ namespace Assets.DualMesh
                 }
             }
 
-            var r_vertex_ghost = new List<float2>(_r_vertex);
-            r_vertex_ghost.Add(new float2(500, 500));
+            var r_vertex_ghost = new List<Float2>(_r_vertex);
+            r_vertex_ghost.Add(new Float2(500, 500));
 
             // 代表 _r_vertex.index
             var _triangles_r = new int[numSolidSides + 3 * numUnpairedSides];
@@ -264,7 +267,7 @@ namespace Assets.DualMesh
             UnityEngine.Debug.Log($"delaunator Triangles:{delaunator.triangles.Length} Halfedges:{delaunator.halfedges.Length}");
             var graph = new Graph()
             {
-                _r_vertex = this.points.Select(t => new float2(t[0], t[1])).ToList(),
+                _r_vertex = this.points.Select(t => new Float2(t[0], t[1])).ToList(),
                 _triangles = delaunator.triangles,
                 _halfedges = delaunator.halfedges
             };

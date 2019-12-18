@@ -1,14 +1,17 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 
 namespace Assets.MapJobs
 {
+    using Float = Double;
+
     unsafe struct Job5AssignDownslope : IJob
     {
         public int numTriangles;
         [NativeDisableUnsafePtrRestriction] public int* _halfedges;
-        [NativeDisableUnsafePtrRestriction] public float* t_elevation;
+        [NativeDisableUnsafePtrRestriction] public Float* t_elevation;
 
         [NativeDisableUnsafePtrRestriction] public int* order_t;
         [NativeDisableUnsafePtrRestriction] public int* t_downslope_s;

@@ -1,8 +1,13 @@
-﻿using Unity.Collections;
+﻿using System;
+using Unity.Collections;
 using Unity.Jobs;
+using Unity.Mathematics;
 
 namespace Assets.MapJobs
 {
+    using Float = Double;
+    using Float2 = double2;
+
     struct Job4AssignRainfall : IJob
     {
         public float raininess;
@@ -13,13 +18,13 @@ namespace Assets.MapJobs
         [ReadOnly] public NativeArray<int> _triangles;
         [ReadOnly] public NativeArray<int> _halfedges;
         [ReadOnly] public NativeArray<int> _r_in_s;
-        [ReadOnly] public NativeArray<float> r_elevation;
+        [ReadOnly] public NativeArray<Float> r_elevation;
 
-        [ReadOnly] public NativeArray<float> r_wind_sort;
+        [ReadOnly] public NativeArray<Float> r_wind_sort;
         [ReadOnly] public NativeArray<int> wind_order_r;
 
-        [WriteOnly] public NativeArray<float> r_rainfall;
-        public NativeArray<float> r_humidity;
+        [WriteOnly] public NativeArray<Float> r_rainfall;
+        public NativeArray<Float> r_humidity;
 
         public void Execute()
         {

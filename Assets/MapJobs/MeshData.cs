@@ -6,11 +6,14 @@ using UnityEngine;
 
 namespace Assets.MapJobs
 {
+    using Float = Double;
+    using Float2 = double2;
+
     class MeshData
     {
         public struct Graph
         {
-            public float2[] _r_vertex { get; set; }
+            public Float2[] _r_vertex { get; set; }
             public int[] _triangles { get; set; }
             public int[] _halfedges { get; set; }
             public int numBoundaryRegions { get; set; }
@@ -21,11 +24,11 @@ namespace Assets.MapJobs
         /* Internals */
         public NativeArray<int> _halfedges;// s_opposite_s
         public NativeArray<int> _triangles;// s_begin_r
-        public NativeArray<float2> _r_vertex;
+        public NativeArray<Float2> _r_vertex;
 
         public NativeArray<int> _r_in_s;
-        public NativeArray<float2> _t_vertex;
-        public NativeArray<float> s_length;
+        public NativeArray<Float2> _t_vertex;
+        public NativeArray<Float> s_length;
 
         public int numBoundaryRegions { get; private set; }
         public int numSides { get; private set; }//_triangles.Length;
@@ -42,7 +45,7 @@ namespace Assets.MapJobs
 
             _halfedges = new NativeArray<int>(graph._halfedges, Allocator.Persistent);
             _triangles = new NativeArray<int>(graph._triangles, Allocator.Persistent);
-            _r_vertex = new NativeArray<float2>(graph._r_vertex, Allocator.Persistent);
+            _r_vertex = new NativeArray<Float2>(graph._r_vertex, Allocator.Persistent);
 
             numSides = _triangles.Length;
             numRegions = _r_vertex.Length;
@@ -51,9 +54,9 @@ namespace Assets.MapJobs
             numSolidRegions = numRegions - 1; // TODO: only if there are ghosts
             numSolidTriangles = numSolidSides / 3;
 
-            _t_vertex = new NativeArray<float2>(numTriangles, Allocator.Persistent);
+            _t_vertex = new NativeArray<Float2>(numTriangles, Allocator.Persistent);
             _r_in_s = new NativeArray<int>(numRegions, Allocator.Persistent);
-            s_length = new NativeArray<float>(numSides, Allocator.Persistent);
+            s_length = new NativeArray<Float>(numSides, Allocator.Persistent);
 
             _update();
         }
@@ -85,7 +88,7 @@ namespace Assets.MapJobs
             for (var s = 0; s < _triangles.Length; s += 3)
             {
                 int t = s / 3;
-                float2
+                Float2
                     a = _r_vertex[_triangles[s]],
                     b = _r_vertex[_triangles[s + 1]],
                     c = _r_vertex[_triangles[s + 2]];
@@ -93,8 +96,8 @@ namespace Assets.MapJobs
                 if (s_ghost(s))
                 {
                     // ghost triangle center is just outside the unpaired side
-                    float dx = b[0] - a[0], dy = b[1] - a[1];
-                    var scale = 10 / (float)Math.Sqrt(dx * dx + dy * dy); // go 10units away from side
+                    Float dx = b[0] - a[0], dy = b[1] - a[1];
+                    var scale = 10 / Math.Sqrt(dx * dx + dy * dy); // go 10units away from side
                     vt[0] = 0.5f * (a[0] + b[0]) + dy * scale;
                     vt[1] = 0.5f * (a[1] + b[1]) - dx * scale;
                 }
@@ -111,21 +114,19 @@ namespace Assets.MapJobs
             {
                 int r1 = s_begin_r(s),
                     r2 = s_end_r(s);
-                float
+                Float
                     dx = r_x(r1) - r_x(r2),
                     dy = r_y(r1) - r_y(r2);
-                s_length[s] = (float)Math.Sqrt(dx * dx + dy * dy);
+                s_length[s] = Math.Sqrt(dx * dx + dy * dy);
             }
         }
 
-        public float r_x(int r) { return _r_vertex[r][0]; }
-        public float r_y(int r) { return _r_vertex[r][1]; }
-        public float t_x(int t) { return _t_vertex[t][0]; }
-        public float t_y(int t) { return _t_vertex[t][1]; }
-        public float[] r_pos(int r) { var tmp = new float[2]; tmp[0] = r_x(r); tmp[1] = r_y(r); return tmp; }
-        public float[] t_pos(int t) { var tmp = new float[2]; tmp[0] = t_x(t); tmp[1] = t_y(t); return tmp; }
-        public Vector2 r_v2(int r) { return new Vector2(r_x(r), r_y(r)); }
-        public Vector2 t_v2(int t) { return new Vector2(t_x(t), t_y(t)); }
+        public Float r_x(int r) { return _r_vertex[r][0]; }
+        public Float r_y(int r) { return _r_vertex[r][1]; }
+        public Float t_x(int t) { return _t_vertex[t][0]; }
+        public Float t_y(int t) { return _t_vertex[t][1]; }
+        public Float[] r_pos(int r) { var tmp = new Float[2]; tmp[0] = r_x(r); tmp[1] = r_y(r); return tmp; }
+        public Float[] t_pos(int t) { var tmp = new Float[2]; tmp[0] = t_x(t); tmp[1] = t_y(t); return tmp; }
 
         public int s_begin_r(int s) { return _triangles[s]; }
         public int s_end_r(int s) { return _triangles[s_next_s(s)]; }

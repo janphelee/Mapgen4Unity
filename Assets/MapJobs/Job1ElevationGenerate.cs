@@ -1,16 +1,20 @@
 ﻿using System;
 using Unity.Collections;
 using Unity.Jobs;
+using Unity.Mathematics;
 
 namespace Assets.MapJobs
 {
+    using Float = Double;
+    using Float2 = double2;
+
     struct Job1ElevationGenerate : IJobParallelFor
     {
         public int size;
-        public float island;
+        public Float island;
         public SimplexNoise simplex;
 
-        [WriteOnly] public NativeArray<float> elevation;
+        [WriteOnly] public NativeArray<Float> elevation;
 
         public void Execute(int index)
         {
@@ -23,7 +27,7 @@ namespace Assets.MapJobs
             var e = 0.5 * (fbm_noise(nx, ny) + island * (0.75 - 2 * distance * distance));
             if (e < -1.0) { e = -1.0; }
             if (e > +1.0) { e = +1.0; }
-            elevation[index] = (float)e;
+            elevation[index] = e;
             if (e > 0)
             {
                 var m = 0.5 * simplex.noise(nx + 30, ny + 50)
@@ -32,7 +36,7 @@ namespace Assets.MapJobs
                 var mountain = Math.Min(1.0, e * 5.0) * (1 - Math.Abs(m) / 0.5);
                 if (mountain > 0.0)
                 {
-                    elevation[index] = (float)Math.Max(e, Math.Min(e * 3, mountain));
+                    elevation[index] = Math.Max(e, Math.Min(e * 3, mountain));
                 }
             }
         }

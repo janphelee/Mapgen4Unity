@@ -1,22 +1,27 @@
-﻿using Unity.Collections;
+﻿using System;
+using Unity.Collections;
 using Unity.Jobs;
+using Unity.Mathematics;
 
 namespace Assets.MapJobs
 {
+    using Float = Double;
+    using Float2 = double2;
+
     struct Job2AssignTriangleElevation : IJobParallelFor
     {
-        [ReadOnly] public NativeArray<float> t_noise0;
-        [ReadOnly] public NativeArray<float> t_noise1;
-        [ReadOnly] public NativeArray<float> t_noise2;
-        [ReadOnly] public NativeArray<float> t_noise4;
+        [ReadOnly] public NativeArray<Float> t_noise0;
+        [ReadOnly] public NativeArray<Float> t_noise1;
+        [ReadOnly] public NativeArray<Float> t_noise2;
+        [ReadOnly] public NativeArray<Float> t_noise4;
 
-        [ReadOnly] public NativeArray<float> t_mountain_distance;
+        [ReadOnly] public NativeArray<Float> t_mountain_distance;
 
         public float hill_height;
         public float ocean_depth;
         public int mountain_slope;
 
-        public NativeArray<float> t_elevation;
+        public NativeArray<Float> t_elevation;
 
         public void Execute(int index)
         {
