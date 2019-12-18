@@ -115,6 +115,8 @@ namespace Assets
         // Update is called once per frame
         private void OnGUI()
         {
+            GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), mapMesh.renderTexture, ScaleMode.StretchToFill, false);
+
             if (activeUI) clientRect = GUI.Window(10086, clientRect, WindowFunction, "地图参数");
 
             string txt = $"{Input.mousePosition}\n";

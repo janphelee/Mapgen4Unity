@@ -26,6 +26,8 @@ namespace Assets
         private GameObject tmpObj { get; set; }
         private Camera mainCamera { get; set; }
 
+        public RenderTexture renderTexture { get; private set; }
+
 
         private void Awake()
         {
@@ -39,7 +41,11 @@ namespace Assets
             landzs = MeshSplit.createMesh(transform, "map mesh");
 
             tmpObj = new GameObject("__worldToLandPosition");
+
             mainCamera = Camera.main;
+            renderTexture = new RenderTexture(Screen.width, Screen.height, 0);
+            mainCamera.targetTexture = renderTexture;
+            mainCamera.gameObject.SetActive(false);
         }
 
         private void OnDestroy()
@@ -92,6 +98,8 @@ namespace Assets
             rtCamera.RenderWithShader(shaders[1], string.Empty);
 
             rtCamera.targetTexture = rt;
+
+            mainCamera.Render();
         }
 
         public Vector3 getHitPosition()
