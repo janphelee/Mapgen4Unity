@@ -35,19 +35,19 @@ namespace Assets
             { "tilt_deg",new float[]{0,0,90} },
             { "rotate_deg",new float[]{0,0,360} },
 
-            { "light_angle_deg",new float[]{ 80, 0, 360 } },
+            { "light_angle_deg",new float[]{ 80, 0, 360 } },//5
             { "slope",new float[]{ 2, 0, 5 } },
             { "flat",new float[]{ 2.5f, 0, 5 } },
             { "ambient",new float[]{ 0.25f, 0, 1 } },
             { "overhead",new float[]{ 30, 0, 60 } },
             { "mountain_height",new float[]{ 50, 0, 250 } },
 
-            { "outline_depth",new float[]{1,0,2} },
+            { "outline_depth",new float[]{1,0,2} },//11
             { "outline_strength",new float[]{15,0,30} },
             { "outline_threshold",new float[]{0,0,100} },
             { "outline_coast",new float[]{0,0,1} },
             { "outline_water",new float[]{10,0,20} },// things start going wrong when this is high
-            { "biome_colors",new float[]{1,0,1} },
+            { "biome_colors",new float[]{1,0,1} },//16
         };
         private int selected1 { get; set; }
         private int selected2 { get; set; }
@@ -220,6 +220,8 @@ namespace Assets
                         mapMesh.landzs.setFloat($"_{k}", v[0]);
                         break;
                 }
+                if (i == 15)
+                    mapMesh.renderLand();
                 mapMesh.render();
             });
 

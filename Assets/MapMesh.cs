@@ -77,11 +77,11 @@ namespace Assets
                 var v22 = mapJobs.land_uv.ToArray();
                 var t32 = mapJobs.land_i.ToArray();
                 landzs.setup(v32, t32, v22, shaders[0]);
-                landzs.setTexture("_vertex_water", rt_WaterColor);
                 //texture = ColorMap.texture();
                 //saveToPng(texture as Texture2D, Application.streamingAssetsPath + "/colormap.png");
                 landzs.setTexture("_ColorMap", colorBitmap);
                 landzs.setTexture("_vertex_land", rt_LandColor);
+                landzs.setTexture("_vertex_water", rt_WaterColor);
             }
             //);
 
@@ -102,6 +102,21 @@ namespace Assets
             rtCamera.targetTexture = rt;
 
             render();
+        }
+
+        public void renderLand()
+        {
+            var rt = rtCamera.targetTexture;
+
+            rtCamera.targetTexture = rt_LandColor;
+            rtCamera.RenderWithShader(shaders[1], string.Empty);
+
+            rtCamera.targetTexture = rt;
+        }
+
+        public void render()
+        {
+            mainCamera.Render();
         }
 
         public Vector3 getHitPosition()
@@ -190,11 +205,6 @@ namespace Assets
                 working = false;
                 if (requestJob) genereate();
             });
-        }
-
-        public void render()
-        {
-            mainCamera.Render();
         }
 
         public void setConfig(_MapJobs.Config cfg)

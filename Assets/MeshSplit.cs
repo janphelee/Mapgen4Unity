@@ -198,7 +198,11 @@ namespace Assets
                 meshes[i].uv = vv2[i];
             }
         }
-
+        public void setShader(Shader value)
+        {
+            if (renderers == null) return;
+            foreach (var r in renderers) r.material.shader = value;
+        }
         public void setTexture(string name, Texture value)
         {
             if (renderers == null) return;

@@ -18,7 +18,7 @@ Shader "Custom/VertexColorsOnly"{
 		_outline_strength("outline_strength", Range(0.0,30.0)) = 15.0
 		_outline_threshold("outline_threshold", Range(0.0,100.0)) = 0.0
 		_outline_coast("outline_coast", Range(0,1)) = 0.0
-		_outline_water("outline_water", Range(0.0,20.0)) = 10.0
+		_outline_water("outline_water", Range(0.0,20.0)) = 0.0
 		_biome_colors("biome_colors", Range(0,1)) = 1.0
 	}
 	SubShader{
