@@ -12,14 +12,14 @@ namespace Assets.MapJobs
 
     partial class _MapJobs
     {
-        private void Job1ElevationGenerate(int seed)
+        private void Job1ElevationGenerate(int seed, Float island)
         {
             var tmp_buffer_t = new NativeArray<byte>(2048, Allocator.TempJob);
             var simplex = new SimplexNoise(seed, tmp_buffer_t);
             var job = new Job1ElevationGenerate()
             {
                 size = CANVAS_SIZE,
-                island = config.island,
+                island = island,
                 simplex = simplex,
                 elevation = elevation
             };
@@ -43,7 +43,7 @@ namespace Assets.MapJobs
         }
 
 
-        public unsafe void assignElevation(float noisy_coastlines = 0.01f, float hill_height = 0.02f, float ocean_depth = 1.5f)
+        public unsafe void assignElevation(Float noisy_coastlines, Float hill_height, Float ocean_depth)
         {
             var job1 = new Job2AssignSolidTriangle()
             {
@@ -90,18 +90,16 @@ namespace Assets.MapJobs
             });
         }
 
-        public unsafe void assignRainfall(float wind_angle_deg = 0/*[0,360]*/, float raininess = 0.9f/*[0,2]*/, float evaporation = 0.5f/*[0,1]*/, float rain_shadow = 0.5f/*[0.1,2]*/)
+        public unsafe void assignRainfall(Float wind_angle_deg, Float raininess, Float rain_shadow, Float evaporation)
         {
             int numRegions = mesh.numRegions;
             var _r_in_s = mesh._r_in_s;
             var _halfedges = mesh._halfedges;
 
-            if (wind_angle_deg != config.windAngleDeg)
+            if (config.wind_angle_deg != wind_angle_deg)
             {
-                config.windAngleDeg = wind_angle_deg;
-
                 var rad = Mathf.Deg2Rad * wind_angle_deg;
-                var vec = new float2(Mathf.Cos(rad), Mathf.Sin(rad));
+                var vec = new Float2(Math.Cos(rad), Math.Sin(rad));
 
                 var job1 = new Job4AssignAngleWind()
                 {
@@ -149,7 +147,7 @@ namespace Assets.MapJobs
             });
         }
 
-        public unsafe void assignRivers(Float flow = 0.2f)
+        public unsafe void assignRivers(Float flow)
         {
             var numTriangles = mesh.numTriangles;
 
@@ -177,12 +175,10 @@ namespace Assets.MapJobs
             job2.Execute();
         }
 
-        public unsafe void setRiverGeometry()
+        public unsafe void setRiverGeometry(Float lg_min_flow, Float lg_river_width, Float spacing)
         {
-            const float lg_min_flow = 2.7f;
-            const float lg_river_width = -2.7f;
-            float MIN_FLOW = Mathf.Exp(lg_min_flow);
-            float RIVER_WIDTH = Mathf.Exp(lg_river_width);
+            var MIN_FLOW = Math.Exp(lg_min_flow);
+            var RIVER_WIDTH = Math.Exp(lg_river_width);
 
             var flow_out_s = new NativeArray<int>(mesh.numSides, Allocator.TempJob);
             var rivers_cnt = new NativeArray<int>(1, Allocator.TempJob);
@@ -204,7 +200,7 @@ namespace Assets.MapJobs
                 numRiverSizes = riverTex.NumSizes,
                 MIN_FLOW = MIN_FLOW,
                 RIVER_WIDTH = RIVER_WIDTH,
-                spacing = config.spacing,
+                spacing = spacing,
                 _halfedges = (int*)NativeArrayUnsafeUtility.GetUnsafePtr(mesh._halfedges),
                 _triangles = (int*)NativeArrayUnsafeUtility.GetUnsafePtr(mesh._triangles),
                 _r_vertex = (Float2*)NativeArrayUnsafeUtility.GetUnsafePtr(mesh._r_vertex),

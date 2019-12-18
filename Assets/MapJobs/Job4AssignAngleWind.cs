@@ -10,7 +10,7 @@ namespace Assets.MapJobs
 
     struct Job4AssignAngleWind : IJobParallelFor
     {
-        public float2 windAngleVec;
+        public Float2 windAngleVec;
 
         [ReadOnly] public NativeArray<Float2> r_vertex;
 

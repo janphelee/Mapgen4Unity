@@ -13,7 +13,7 @@ namespace Assets.MapJobs
     {
         [NativeDisableUnsafePtrRestriction] public Float* elevation;
         public int paintSize;
-        public float noisy_coastlines;
+        public Float noisy_coastlines;
 
         [ReadOnly] public NativeArray<Float> t_noise4;
         [ReadOnly] public NativeArray<Float> t_noise5;

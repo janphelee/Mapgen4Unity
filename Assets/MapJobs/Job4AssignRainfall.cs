@@ -10,9 +10,9 @@ namespace Assets.MapJobs
 
     struct Job4AssignRainfall : IJob
     {
-        public float raininess;
-        public float rain_shadow;
-        public float evaporation;
+        public Float raininess;
+        public Float rain_shadow;
+        public Float evaporation;
 
         public int numBoundaryRegions;
         [ReadOnly] public NativeArray<int> _triangles;

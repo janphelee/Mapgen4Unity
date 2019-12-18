@@ -11,7 +11,7 @@ namespace Assets
     public class Loader : MonoBehaviour
     {
         private float jitter = 0.5f;
-        private float spacing = 5f;
+        public float spacing = 5f;
         public int seed = 187;
 
         [SerializeField]

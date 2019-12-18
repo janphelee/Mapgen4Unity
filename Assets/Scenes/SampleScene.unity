@@ -219,6 +219,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a00bf833d86f13c4eac52924d8c81f04, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  spacing: 5
+  seed: 187
   mapMesh: {fileID: 624059198}
 --- !u!1 &1755158984
 GameObject:

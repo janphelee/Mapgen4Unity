@@ -28,6 +28,8 @@ namespace Assets
 
         public RenderTexture renderTexture { get; private set; }
 
+        public _MapJobs.Config config { get; set; }
+
 
         private void Awake()
         {
@@ -129,7 +131,7 @@ namespace Assets
             return sp;
         }
 
-        public void setup(int seed, MeshBuilder.Graph graph, short[] peaks_index, float spacing, int mountain_height = 50)
+        public void setup(int seed, MeshBuilder.Graph graph, short[] peaks_index, float spacing)
         {
             var g2 = new MeshData.Graph()
             {
@@ -143,14 +145,25 @@ namespace Assets
             mapJobs = new _MapJobs(g2, peaks_index, spacing);
             painting = new MapPaint(mapJobs.elevation);
 
-            config.seed = seed;
-            config.island = 0.5f;
-            config.spacing = spacing;
+            var cfg = mapJobs.config;
+            cfg.seed = seed;
+            cfg.spacing = spacing;
+            cfg.island = 0.5f;
+            cfg.mountain_jagged = 0;
+            cfg.noisy_coastlines = 0.01f;
+            cfg.hill_height = 0.02f;
+            cfg.ocean_depth = 1.5f;
+            cfg.wind_angle_deg = 0;
+            cfg.raininess = 0.9f;
+            cfg.rain_shadow = 0.5f;
+            cfg.evaporation = 0.5f;
+            cfg.lg_min_flow = 2.7f;
+            cfg.lg_river_width = -2.7f;
+            cfg.flow = 0.2f;
 
-            genereate();
+            setConfig(cfg);
         }
 
-        public _MapJobs.Config config;
         public readonly List<int> elapsedMs = new List<int>();
         private void onCallback(long elapsed)
         {
@@ -182,6 +195,12 @@ namespace Assets
         public void render()
         {
             mainCamera.Render();
+        }
+
+        public void setConfig(_MapJobs.Config cfg)
+        {
+            config = cfg;
+            genereate();
         }
 
 

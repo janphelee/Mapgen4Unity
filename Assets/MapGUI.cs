@@ -1,4 +1,5 @@
 ﻿using Assets.MapJobs;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,9 +10,9 @@ namespace Assets
         private int[] seed = new int[] { 187, 1, 1 << 30 };
         private Dictionary<string, float[]> elevationParams = new Dictionary<string, float[]>() {
             { "island",new float[]{ 0.5f, 0, 1 } },
+            { "mountain_jagged",new float[]{ 0, 0, 1 } },
             { "noisy_coastlines",new float[]{ 0.01f, 0, 0.1f } },
             { "hill_height",new float[]{ 0.02f, 0, 0.1f } },
-            { "mountain_jagged",new float[]{ 0, 0, 1 } },
             { "ocean_depth",new float[]{ 1.5f, 1, 3 } },
         };
         private Dictionary<string, float[]> biomesParams = new Dictionary<string, float[]>() {
@@ -135,17 +136,99 @@ namespace Assets
 
             scrollPosition = GUILayout.BeginScrollView(scrollPosition);
 
-            renderUU("elevationParams", elevationParams);
-            renderUU("biomesParams", biomesParams);
-            renderUU("riversParams", riversParams);
-            renderUU("renderParams", renderParams);
+            renderUU("elevationParams", elevationParams, (i, k, v) =>
+            {
+                var cfg = mapMesh.config;
+                switch (i)
+                {
+                    case 0:
+                        cfg.island = v[0];
+                        break;
+                    case 1:
+                        cfg.mountain_jagged = v[0];
+                        break;
+                    case 2:
+                        cfg.noisy_coastlines = v[0];
+                        break;
+                    case 3:
+                        cfg.hill_height = v[0];
+                        break;
+                    case 4:
+                        cfg.ocean_depth = v[0];
+                        break;
+                }
+                mapMesh.setConfig(cfg);
+            });
+            renderUU("biomesParams", biomesParams, (i, k, v) =>
+            {
+                var cfg = mapMesh.config;
+                switch (i)
+                {
+                    case 0:
+                        cfg.wind_angle_deg = v[0];
+                        break;
+                    case 1:
+                        cfg.raininess = v[0];
+                        break;
+                    case 2:
+                        cfg.rain_shadow = v[0];
+                        break;
+                    case 3:
+                        cfg.evaporation = v[0];
+                        break;
+                }
+                mapMesh.setConfig(cfg);
+            });
+            renderUU("riversParams", riversParams, (i, k, v) =>
+            {
+                var cfg = mapMesh.config;
+                switch (i)
+                {
+                    case 0:
+                        cfg.lg_min_flow = v[0];
+                        break;
+                    case 1:
+                        cfg.lg_river_width = v[0];
+                        break;
+                    case 2:
+                        cfg.flow = v[0];
+                        break;
+                }
+                mapMesh.setConfig(cfg);
+            });
+            renderUU("renderParams", renderParams, (i, k, v) =>
+            {
+                var cam = mapMesh.mainCamera;
+                switch (i)
+                {
+                    case 0:
+                        cam.orthographicSize = v[0];
+                        break;
+                    case 1:
+                    case 2:
+                        var pos = cam.transform.localPosition;
+                        if (i == 1) pos.x = v[0]; else pos.y = v[0];
+                        cam.transform.localPosition = pos;
+                        break;
+                    case 3:
+                    case 4:
+                        var rot = eulerAngles;
+                        if (i == 3) rot.x = v[0]; else rot.z = v[0];
+                        transform.parent.localEulerAngles = eulerAngles = rot;
+                        break;
+                    default:
+                        mapMesh.landzs.setFloat($"_{k}", v[0]);
+                        break;
+                }
+                mapMesh.render();
+            });
 
             GUILayout.EndScrollView();
 
             if (Input.GetKey(KeyCode.LeftControl)) GUI.DragWindow();
         }
 
-        private void renderUU(string name, Dictionary<string, float[]> dict)
+        private void renderUU(string name, Dictionary<string, float[]> dict, Action<int, string, float[]> cb)
         {
             GUILayout.Label(name, new GUIStyle()
             {
@@ -167,30 +250,7 @@ namespace Assets
                 if (!k.Value[0].Equals(val))
                 {
                     k.Value[0] = val;
-
-                    var cam = mapMesh.mainCamera;
-                    switch (i)
-                    {
-                        case 0:
-                            cam.orthographicSize = val;
-                            break;
-                        case 1:
-                        case 2:
-                            var pos = cam.transform.localPosition;
-                            if (i == 1) pos.x = val; else pos.y = val;
-                            cam.transform.localPosition = pos;
-                            break;
-                        case 3:
-                        case 4:
-                            var rot = eulerAngles;
-                            if (i == 3) rot.x = val; else rot.z = val;
-                            transform.parent.localEulerAngles = eulerAngles = rot;
-                            break;
-                        default:
-                            mapMesh.landzs.setFloat($"_{k.Key}", val);
-                            break;
-                    }
-                    mapMesh.render();
+                    cb?.Invoke(i, k.Key, k.Value);
                 }
                 GUILayout.Label(k.Value[0].ToString());
 

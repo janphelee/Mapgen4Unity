@@ -16,20 +16,29 @@ namespace Assets.MapJobs
         public struct Config
         {
             public int seed;
-            public Float island;
-
             public Float spacing;
-            public Float mountainJaggedness;
-            public Float windAngleDeg;
 
+            public Float island;
+            public Float mountain_jagged;
+            public Float noisy_coastlines;
+            public Float hill_height;
+            public Float ocean_depth;
+
+            public Float wind_angle_deg;
+            public Float raininess;
+            public Float rain_shadow;
+            public Float evaporation;
+
+            public Float lg_min_flow;
+            public Float lg_river_width;
             public Float flow;
         }
 
-        private Config config;
+        public Config config { get; set; }
 
         private MeshData mesh { get; set; }
         private RiverTexture riverTex { get; set; }
-        int[] peaks_t { get; set; }
+        private int[] peaks_t { get; set; }
 
 
         // Job1ElevationGenerate =====================================
@@ -68,17 +77,15 @@ namespace Assets.MapJobs
             mesh = new MeshData(graph);
             riverTex = RiverTexture.createDefault();
 
+            peaks_t = createPeaks(peaks_index, mesh.numBoundaryRegions);
 
             config = new Config()
             {
                 seed = -1,
-                island = 0.682f,
-                spacing = spacing,
-
-                windAngleDeg = -1,
-                flow = 0.2f,
+                island = -1,
+                mountain_jagged = -1,
+                wind_angle_deg = -1,
             };
-            createPeaks(peaks_index, mesh.numBoundaryRegions);
 
             elevation = new NativeArray<Float>(CANVAS_SIZE * CANVAS_SIZE, Allocator.Persistent);
             preNoise = new PreNoise();
@@ -136,19 +143,6 @@ namespace Assets.MapJobs
             land_v3.Dispose();
             land_uv.Dispose();
             land_i.Dispose();
-        }
-
-        private void createPeaks(short[] peaks_index, int numBoundaryRegions)
-        {
-
-            var peaks_t = new List<int>();
-            for (var i = 0; i < peaks_index.Length; ++i)
-            {
-                var index = peaks_index[i];
-                var r = index + numBoundaryRegions;
-                peaks_t.Add(mesh.s_inner_t(mesh._r_in_s[r]));
-            }
-            this.peaks_t = peaks_t.ToArray();
         }
     }
 }

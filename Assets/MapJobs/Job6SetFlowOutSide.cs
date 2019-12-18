@@ -11,7 +11,7 @@ namespace Assets.MapJobs
 
     unsafe struct Job6SetFlowOutSide : IJob
     {
-        public float MIN_FLOW;
+        public Float MIN_FLOW;
         public int numSolidTriangles;
 
         [NativeDisableUnsafePtrRestriction] public int* t_downslope_s;

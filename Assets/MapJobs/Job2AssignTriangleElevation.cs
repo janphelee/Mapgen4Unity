@@ -17,8 +17,8 @@ namespace Assets.MapJobs
 
         [ReadOnly] public NativeArray<Float> t_mountain_distance;
 
-        public float hill_height;
-        public float ocean_depth;
+        public Float hill_height;
+        public Float ocean_depth;
         public int mountain_slope;
 
         public NativeArray<Float> t_elevation;

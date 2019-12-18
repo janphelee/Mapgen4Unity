@@ -10,7 +10,6 @@ using UnityEngine;
 namespace Assets.MapJobs
 {
     using Float = Double;
-    using Float2 = double2;
     using Debug = UnityEngine.Debug;
 
     partial class _MapJobs
@@ -41,6 +40,19 @@ namespace Assets.MapJobs
             }
         }
 
+        private int[] createPeaks(short[] peaks_index, int numBoundaryRegions)
+        {
+
+            var peaks_t = new List<int>();
+            for (var i = 0; i < peaks_index.Length; ++i)
+            {
+                var index = peaks_index[i];
+                var r = index + numBoundaryRegions;
+                peaks_t.Add(mesh.s_inner_t(mesh._r_in_s[r]));
+            }
+            return peaks_t.ToArray();
+        }
+
         public void processAsync(Config other, Action<long> callback)
         {
             new Thread(new ThreadStart(() =>
@@ -51,65 +63,57 @@ namespace Assets.MapJobs
 
         private void process(Config other, Action<long> callback)
         {
+
             var watcher = new Stopwatch();
             watcher.Start();
 
             if (config.seed != other.seed || config.island != other.island)
             {
-                config.island = other.island;
-                Job1ElevationGenerate(other.seed);
-                //Debug.Log($"process Elapsed:{watcher.ElapsedMilliseconds}ms Job1ElevationGenerate");
+                Job1ElevationGenerate(other.seed, other.island);
+                if (debug()) Debug.Log($"process Elapsed:{watcher.ElapsedMilliseconds}ms Job1ElevationGenerate seed:{other.seed}");
             }
-
-            if (config.seed != other.seed || config.mountainJaggedness != other.mountainJaggedness)
+            if (config.seed != other.seed || config.mountain_jagged != other.mountain_jagged)
             {
-                config.mountainJaggedness = other.mountainJaggedness;
-
                 calculateMountainDistance(
-                  other.seed, mesh, peaks_t, config.spacing,
-                  config.mountainJaggedness,
+                  other.seed, mesh, peaks_t, other.spacing,
+                  other.mountain_jagged,
                     t_mountain_distance
                 );
-                //Debug.Log($"process Elapsed:{watcher.ElapsedMilliseconds}ms calculateMountainDistance");
+                if (debug()) Debug.Log($"process Elapsed:{watcher.ElapsedMilliseconds}ms calculateMountainDistance");
             }
-
             if (config.seed != other.seed)
             {
-                config.seed = other.seed;
                 JobPrecomputedNoise(other.seed);
-                //Debug.Log($"process Elapsed:{watcher.ElapsedMilliseconds}ms JobPrecomputedNoise");
+                if (debug()) Debug.Log($"process Elapsed:{watcher.ElapsedMilliseconds}ms JobPrecomputedNoise");
             }
 
-            assignElevation();
-            //Debug.Log($"process Elapsed:{watcher.ElapsedMilliseconds}ms assignElevation");
+            assignElevation(other.noisy_coastlines, other.hill_height, other.ocean_depth);
+            if (debug()) Debug.Log($"process Elapsed:{watcher.ElapsedMilliseconds}ms assignElevation");
 
-            assignRainfall();
-            //Debug.Log($"process Elapsed:{watcher.ElapsedMilliseconds}ms assignRainfall");
+            assignRainfall(other.wind_angle_deg, other.raininess, other.rain_shadow, other.evaporation);
+            if (debug()) Debug.Log($"process Elapsed:{watcher.ElapsedMilliseconds}ms assignRainfall");
 
-            assignRivers(config.flow);
-            //Debug.Log($"process Elapsed:{watcher.ElapsedMilliseconds}ms assignRivers");
+            assignRivers(other.flow);
+            if (debug()) Debug.Log($"process Elapsed:{watcher.ElapsedMilliseconds}ms assignRivers");
             //saveArray("r_rainfall.txt", r_rainfall);
             //saveArray("t_moisture.txt", t_moisture);
             //saveArray("t_downslope_s.txt", t_downslope_s);
             //saveArray("t_flow.txt", t_flow);
             //saveArray("s_flow.txt", s_flow);
 
-            setRiverGeometry();
-            //debugLog($"process Elapsed:{watcher.ElapsedMilliseconds}ms setRiverGeometry riverCount:{riverCount}");
+            setRiverGeometry(other.lg_min_flow, other.lg_river_width, other.spacing);
+            if (debug()) Debug.Log($"process Elapsed:{watcher.ElapsedMilliseconds}ms setRiverGeometry riverCount:{riverCount}");
             setMeshGeometry();
-            //debugLog($"process Elapsed:{watcher.ElapsedMilliseconds}ms setMeshGeometry");
+            if (debug()) Debug.Log($"process Elapsed:{watcher.ElapsedMilliseconds}ms setMeshGeometry");
             setMapGeometry();
-            //debugLog($"process Elapsed:{watcher.ElapsedMilliseconds}ms setMapGeometry");
+            if (debug()) Debug.Log($"process Elapsed:{watcher.ElapsedMilliseconds}ms setMapGeometry");
+            config = other;
 
             watcher.Stop();
 
             if (callback != null) callback.Invoke(watcher.ElapsedMilliseconds);
         }
-
-        private void debugLog(string msg)
-        {
-            Debug.Log(msg);
-        }
+        private bool debug() { return false; }
 
         private void saveArray<T>(string fileName, NativeArray<T> d, int limit = int.MaxValue) where T : struct
         {

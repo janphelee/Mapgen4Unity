@@ -12,8 +12,8 @@ namespace Assets.MapJobs
     unsafe struct Job6SetRiverGeomerty : IJobParallelFor
     {
         public int numRiverSizes;
-        public float MIN_FLOW;
-        public float RIVER_WIDTH;
+        public Float MIN_FLOW;
+        public Float RIVER_WIDTH;
         public Float spacing;
 
         [NativeDisableUnsafePtrRestriction] public int* _halfedges;
