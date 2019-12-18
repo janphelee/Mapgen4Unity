@@ -1,4 +1,5 @@
-﻿using Unity.Collections.LowLevel.Unsafe;
+﻿using System.Threading.Tasks;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 
 namespace Assets.MapJobs
@@ -22,14 +23,30 @@ namespace Assets.MapJobs
 
         public void Execute()
         {
-            for (var i = 0; i < numTriangles * 3; i++) s_flow[i] = 0;
-            for (var i = 0; i < numTriangles; i++)
+            var flow = this.flow;
+            var t_elevation = this.t_elevation;
+            var s_flow = this.s_flow;
+            var t_flow = this.t_flow;
+            var t_moisture = this.t_moisture;
+
+            //for (var i = 0; i < numTriangles * 3; i++) s_flow[i] = 0;
+            Parallel.For(0, numTriangles * 3, i => s_flow[i] = 0);
+
+            //for (var i = 0; i < numTriangles; i++)
+            //{
+            //    if (t_elevation[i] >= 0)
+            //        t_flow[i] = flow * t_moisture[i] * t_moisture[i];
+            //    else
+            //        t_flow[i] = 0;
+            //}
+            Parallel.For(0, numTriangles, i =>
             {
                 if (t_elevation[i] >= 0)
                     t_flow[i] = flow * t_moisture[i] * t_moisture[i];
                 else
                     t_flow[i] = 0;
-            }
+            });
+
             for (var i = order_t[0] - 1; i > 0; i--)
             {
                 var t = order_t[i];

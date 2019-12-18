@@ -1,4 +1,5 @@
-﻿using Unity.Collections.LowLevel.Unsafe;
+﻿using System.Threading.Tasks;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 
 namespace Assets.MapJobs
@@ -14,10 +15,12 @@ namespace Assets.MapJobs
 
         public void Execute()
         {
+
+            //for (int i = 0; i < numTriangles; ++i) t_downslope_s[i] = -999;
+            var t_downslope_s = this.t_downslope_s;
+            Parallel.For(0, numTriangles, i => t_downslope_s[i] = -999);
+
             var queue = new FlatQueue(numTriangles);
-
-            for (int i = 0; i < numTriangles; ++i) t_downslope_s[i] = -999;
-
             var count = 1;
             for (var t = 0; t < numTriangles; ++t)
             {
