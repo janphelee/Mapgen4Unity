@@ -2,8 +2,9 @@
 using Assets.MapJobs;
 using System.Collections.Generic;
 using System.IO;
-using Unity.Collections;
+using Unity.Mathematics;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace Assets
 {
@@ -44,10 +45,14 @@ namespace Assets
 
             tmpObj = new GameObject("__worldToLandPosition");
 
+            renderTexture = new RenderTexture(Screen.width, Screen.height, 16);//要开启depth，不然会穿透
+            renderTexture.filterMode = FilterMode.Point;
+            //renderTexture.format = RenderTextureFormat.ARGB32;
+
             mainCamera = Camera.main;
-            renderTexture = new RenderTexture(Screen.width, Screen.height, 0);
             mainCamera.targetTexture = renderTexture;
             mainCamera.gameObject.SetActive(false);
+
         }
 
         private void OnDestroy()
@@ -60,7 +65,6 @@ namespace Assets
             if (!needRender) return;
             needRender = !needRender;
 
-            // worker.getBuffer((c, bz) =>
             {
                 var count = mapJobs.riverCount;
                 var v31 = new Vector3[count * 3];
@@ -83,7 +87,6 @@ namespace Assets
                 landzs.setTexture("_vertex_land", rt_LandColor);
                 landzs.setTexture("_vertex_water", rt_WaterColor);
             }
-            //);
 
             var rt = rtCamera.targetTexture;
 
@@ -101,7 +104,7 @@ namespace Assets
 
             rtCamera.targetTexture = rt;
 
-            render();
+            renderColor();
         }
 
         public void renderLand()
@@ -114,7 +117,7 @@ namespace Assets
             rtCamera.targetTexture = rt;
         }
 
-        public void render()
+        public void renderColor()
         {
             mainCamera.Render();
         }
@@ -123,7 +126,6 @@ namespace Assets
         {
             if (!mainCamera)
             {
-                Debug.Log($"getHitPosition zero 111");
                 return Vector3.zero;
             }
             var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
@@ -132,7 +134,6 @@ namespace Assets
             {
                 return worldToLandPosition(hit.point);
             }
-            Debug.Log($"getHitPosition zero 222");
             return Vector3.zero;
         }
         public Vector3 worldToLandPosition(Vector3 p)

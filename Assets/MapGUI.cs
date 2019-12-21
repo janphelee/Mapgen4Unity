@@ -114,11 +114,13 @@ namespace Assets
         // Update is called once per frame
         private void OnGUI()
         {
-            GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), mapMesh.renderTexture, ScaleMode.StretchToFill, false);
+            if (mapMesh.renderTexture) GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), mapMesh.renderTexture, ScaleMode.StretchToFill, false);
 
             if (activeUI) clientRect = GUI.Window(10086, clientRect, WindowFunction, "地图参数");
 
+            //var cam = Camera.current;
             string txt = $"{Input.mousePosition}\n";
+            //if (cam) txt += $"euler:{cam.transform.eulerAngles} aspect:{cam.aspect} size:{cam.orthographicSize}\n";
             var tt = mapMesh.elapsedMs.ToArray();
             for (int i = 0; i < tt.Length; ++i)
             {
@@ -222,7 +224,7 @@ namespace Assets
                 }
                 if (i == 15)
                     mapMesh.renderLand();
-                mapMesh.render();
+                mapMesh.renderColor();
             });
 
             GUILayout.EndScrollView();

@@ -36,30 +36,47 @@ Shader "Custom/VertexColorsOnly"{
 
 			struct v2f {
 				float4 pos:POSITION;
-				float2 uv:TEXCOORD0;
+				float2 v_em:TEXCOORD0;
 			};
 
 			v2f vert(appdata_full v)
 			{
 				v2f o;
 
-				float2 uv = v.texcoord.xy;
-				float4 pos = v.vertex;
+				float2 a_em = v.texcoord.xy;
+				
+				float h = max(a_em.x, 0.0)*_mountain_height;
+				float4 a_xy = float4( v.vertex.xy, h,1);
 
 				
-				pos = float4(UnityObjectToViewPos(pos),1);
-				pos += float4(0,max(uv.x, 0.0)*_mountain_height,-pos.y,1);
-				o.pos = UnityViewToClipPos(pos);
+				//float3 cz = mul(unity_CameraToWorld, float4(0,0,1, 1)).xyz;
+				float3 cz = mul(UNITY_MATRIX_IT_MV, float4(0,0,1,1)).xyz;//视图空间=》本地空间
+				float3 c0 = mul(UNITY_MATRIX_IT_MV, float4(0,0,0,1)).xyz;//视图空间=》本地空间
+				float3 viewDir = normalize(cz-c0);//本地空间的相机朝向,
+				
+				float viewDot;
+				if(viewDir.x!=0 || viewDir.y!=0){
+					float3 lineDir = normalize(float3(viewDir.xy,0));
+					viewDot = dot(viewDir,lineDir);
+				}else{
+					viewDot = 0;
+				}
 
-				o.uv = uv;
+				float4x4 mat = mul(UNITY_MATRIX_V,unity_ObjectToWorld);
+				float4 pos = mul(mat, a_xy);//原始的顶点观察坐标
+				pos.y += (1.0-viewDot)*h;
+				
+				o.pos = mul(UNITY_MATRIX_P,pos);
+				o.v_em = a_em;
 
 				return o;
 			}
 			
 			fixed4 frag(v2f IN) :COLOR
 			{
-				float v_z = IN.uv.x;
+				float v_z = IN.v_em.x;
 				return float4(frac(256.0*v_z),floor(256.0*v_z)/256.0,0,1);
+				//return float4(0,0,0,1);
 			}
 
 			ENDCG
@@ -109,20 +126,35 @@ Shader "Custom/VertexColorsOnly"{
 
 			v2f vert(appdata_full v)
 			{
-				float4 a_xy = v.vertex;
-				float2 a_em = v.texcoord.xy;
-
 				v2f o;
+				
+				float2 a_em = v.texcoord.xy;
+				
+				float h = max(a_em.x, 0.0)*_mountain_height;
+				float4 a_xy = float4( v.vertex.xy, h,1);
 
 				o.v_uv = a_xy.xy / 1000.0;
+				
+				//float3 cz = mul(unity_CameraToWorld, float4(0,0,1, 1)).xyz;
+				float3 cz = mul(UNITY_MATRIX_IT_MV, float4(0,0,1,1)).xyz;
+				float3 c0 = mul(UNITY_MATRIX_IT_MV, float4(0,0,0,1)).xyz;
+				float3 viewDir = normalize(cz-c0);
+				
+				float viewDot;
+				if(viewDir.x!=0 || viewDir.y!=0){
+					float3 lineDir = normalize(float3(viewDir.xy,0));
+					viewDot = dot(viewDir,lineDir);
+				}else{
+					viewDot = 0;
+				}
 
-				a_xy = float4(UnityObjectToViewPos(a_xy),1);
-				// unity观察系的z方向，unity观察系是右手系，
-				// 其他都是本地坐标，世界坐标，投影坐标都是左手系，所以观察系轴反向
-				a_xy += float4(0,max(a_em.x, 0.0)*_mountain_height,-a_xy.y,1);//增加深度-a_xy.y，越靠近屏幕下方越后渲染
-				o.pos = UnityViewToClipPos(a_xy);
+				float4x4 mat = mul(UNITY_MATRIX_V,unity_ObjectToWorld);
+				float4 pos = mul(mat, a_xy);//原始的顶点观察坐标
+				pos.y += (1.0-viewDot)*h;
+
+				o.pos = mul(UNITY_MATRIX_P,pos);
 				///////////////////////////////////////////////////
-
+				
 				o.v_em = a_em;
 				o.v_xy = ComputeScreenPos(o.pos);
 
@@ -130,7 +162,6 @@ Shader "Custom/VertexColorsOnly"{
 			}
 
 			float decipher(float4 v) {
-				// cg shader frag不能用外部变量?
 				const float2 _decipher = float2(1.0/256.0, 1.0);
 				return dot(_decipher, v.xy);
 				//return v.y;
@@ -143,7 +174,9 @@ Shader "Custom/VertexColorsOnly"{
 			fixed4 frag(v2f IN) :COLOR
 			{
 				float2 v_uv = IN.v_uv; v_uv.y = 1.0 - v_uv.y;//渲染后的纹理Y轴坐标系对调
+				
 				float2 v_em = IN.v_em;
+				
 				float2 v_xy = IN.v_xy.xy/IN.v_xy.w;
 				
 				float3 neutral_land_biome = float3(0.9,0.8,0.7);
