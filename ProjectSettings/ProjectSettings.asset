@@ -536,7 +536,8 @@ PlayerSettings:
   webGLCompressionFormat: 1
   webGLLinkerTarget: 1
   webGLThreadsSupport: 0
-  scriptingDefineSymbols: {}
+  scriptingDefineSymbols:
+    1: Use_Double_Float
   platformArchitecture: {}
   scriptingBackend:
     Standalone: 0
