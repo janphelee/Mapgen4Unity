@@ -87,7 +87,7 @@ class Delaunator
         }
         var cx = (minX + maxX) / 2;
         var cy = (minY + maxY) / 2;
-        UnityEngine.Debug.Log($"n:{n} min:{minX},{minY} max;{maxX},{maxY} cen:{cx},{cy}");
+        //UnityEngine.Debug.Log($"n:{n} min:{minX},{minY} max;{maxX},{maxY} cen:{cx},{cy}");
 
         var minDist = Float.PositiveInfinity;
         int i0 = 0, i1 = 0, i2 = 0;

@@ -17,8 +17,8 @@ namespace Assets.MapJobs
         [NativeDisableUnsafePtrRestriction] public int* _halfedges;
         [NativeDisableUnsafePtrRestriction] public Float* t_elevation;
 
-        [NativeDisableUnsafePtrRestriction] public int* order_t;
         [NativeDisableUnsafePtrRestriction] public int* t_downslope_s;
+        [NativeDisableUnsafePtrRestriction] public int* order_t;
 
         public void Execute()
         {

@@ -11,7 +11,7 @@ using Float2 = Unity.Mathematics.float2;
 
 partial class DualMesh
 {
-    static void makeSphere(int N, Float jitter, int seed, Action<DualMesh, List<Float>> callback)
+    public static void makeSphere(int N, Float jitter, int seed, Action<DualMesh, List<Float>> callback)
     {
         var latlong = generateFibonacciSphere(N, jitter, seed);
 
@@ -35,7 +35,7 @@ partial class DualMesh
             dummy_r_vertex[i] = dummy_r_vertex[0];
         }
 
-        var mesh = new DualMesh(new DualMesh.Graph()
+        var mesh = new DualMesh(new Graph()
         {
             numBoundaryRegions = 0,
             numSolidSides = delaunay.triangles.Length,
@@ -49,11 +49,11 @@ partial class DualMesh
      * them onto out array; for one-offs pass [] as the first argument */
     private static void pushCartesianFromSpherical(List<Float> r_xyz, Float latDeg, Float lonDeg)
     {
-        Float latRad = latDeg / 180.0 * Math.PI,
-              lonRad = lonDeg / 180.0 * Math.PI;
-        r_xyz.Add(Math.Cos(latRad) * Math.Cos(lonRad));
-        r_xyz.Add(Math.Cos(latRad) * Math.Sin(lonRad));
-        r_xyz.Add(Math.Sin(latRad));
+        var latRad = latDeg / 180.0 * Math.PI;
+        var lonRad = lonDeg / 180.0 * Math.PI;
+        r_xyz.Add((Float)(Math.Cos(latRad) * Math.Cos(lonRad)));
+        r_xyz.Add((Float)(Math.Cos(latRad) * Math.Sin(lonRad)));
+        r_xyz.Add((Float)Math.Sin(latRad));
     }
 
 
@@ -150,7 +150,7 @@ partial class DualMesh
 
         // Second algorithm from http://web.archive.org/web/20120421191837/http://www.cgafaq.info/wiki/Evenly_distributed_points_on_sphere
         var s = 3.6 / Math.Sqrt(N);
-        Float dlong = Math.PI * (3 - Math.Sqrt(5)),  /* ~2.39996323 */
+        double dlong = Math.PI * (3 - Math.Sqrt(5)),  /* ~2.39996323 */
               _long = 0,
               dz = 2.0 / N,
               _z = 1 - dz / 2;
@@ -166,8 +166,8 @@ partial class DualMesh
             latDeg += jitter * _randomLat * (latDeg - Math.Asin(Math.Max(-1, _z - dz * 2 * Math.PI * r / s)) * 180 / Math.PI);
             lonDeg += jitter * _randomLon * (s / r * 180 / Math.PI);
 
-            a_latlong.Add(latDeg);
-            a_latlong.Add(lonDeg % 360.0);
+            a_latlong.Add((Float)latDeg);
+            a_latlong.Add((Float)lonDeg % 360);
 
             _long += dlong;
             _z -= dz;

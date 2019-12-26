@@ -76,7 +76,8 @@ namespace Assets
                 var v21 = new Vector2[count * 3];
                 System.Array.Copy(mapJobs.rivers_uv.ToArray(), v21, v21.Length);
                 var t31 = new int[count * 3];
-                for (int i = 0; i < t31.Length; ++i) t31[i] = i;
+                //索引逆序
+                for (int i = 0; i < t31.Length; ++i) t31[i] = t31.Length - 1 - i;
                 waters.setup(v31, t31, v21, shaders[2]);
                 // riverBitmap要开启mipmaps,且FilterMode.Trilinear
                 waters.setTexture("_rivertexturemap", riverBitmap);

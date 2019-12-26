@@ -40,10 +40,9 @@ namespace Assets
                 }
 
                 // 检查超过顶点数量
-                if (v3.Count >= short.MaxValue && i % 3 == 2)
+                if (v3.Count >= ushort.MaxValue && i % 3 == 2)
                 {
                     // 为了保持跟js 绘制同步，调转三角面绘制顺序
-                    k1.Reverse();
                     meshs.Add(createMesh(v3.ToArray(), k1.ToArray(), v2.ToArray(), $"{prefix}_{start}-{i}"));
 
                     start = i + 1;
@@ -54,7 +53,6 @@ namespace Assets
                 }
                 if (i == triangles.Length - 1)
                 {
-                    k1.Reverse();
                     meshs.Add(createMesh(v3.ToArray(), k1.ToArray(), v2.ToArray(), $"{prefix} {start}-{i}"));
                     break;
                 }
@@ -87,7 +85,7 @@ namespace Assets
         public static MeshSplit createMesh(Transform parent, string name)
         {
             var obj = new GameObject(name);
-            obj.transform.SetParent(parent);
+            obj.transform.SetParent(parent, false);
 
             var s = obj.AddComponent<MeshSplit>();
             return s;
@@ -127,10 +125,8 @@ namespace Assets
                 k1.Add(dic[v]);
 
                 // 检查超过顶点数量
-                if (v3.Count >= short.MaxValue && i % 3 == 2)
+                if (v3.Count >= ushort.MaxValue && i % 3 == 2)
                 {
-                    // 为了保持跟js 绘制同步，调转三角面绘制顺序
-                    k1.Reverse();
                     vk1.Add(k1.ToArray());
                     vv3.Add(v3.ToArray());
                     vv2.Add(v2.ToArray());
@@ -143,7 +139,6 @@ namespace Assets
                 }
                 if (i == triangles.Length - 1)
                 {
-                    k1.Reverse();
                     vk1.Add(k1.ToArray());
                     vv3.Add(v3.ToArray());
                     vv2.Add(v2.ToArray());
@@ -171,7 +166,7 @@ namespace Assets
                     vm.Add(mesh);
 
                     var obj = new GameObject(mesh.name);
-                    obj.transform.SetParent(transform, true);
+                    obj.transform.SetParent(transform, false);
                     //if (!string.IsNullOrEmpty(tag)) obj.tag = tag;
 
                     var filter = obj.AddComponent<MeshFilter>();

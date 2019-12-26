@@ -138,10 +138,10 @@ partial class DualMesh
     public static int s_prev_s(int s) { return (s % 3 == 0) ? s + 2 : s - 1; }
     public static int s_next_s(int s) { return (s % 3 == 2) ? s - 2 : s + 1; }
 
-    int[] t_circulate_s(int t) { var out_s = new int[3]; for (var i = 0; i < 3; i++) { out_s[i] = 3 * t + i; } return out_s; }
-    int[] t_circulate_r(int t) { var out_r = new int[3]; for (var i = 0; i < 3; i++) { out_r[i] = _triangles[3 * t + i]; } return out_r; }
-    int[] t_circulate_t(int t) { var out_t = new int[3]; for (var i = 0; i < 3; i++) { out_t[i] = s_outer_t(3 * t + i); } return out_t; }
-    int[] r_circulate_s(int r)
+    public int[] t_circulate_s(int t) { var out_s = new int[3]; for (var i = 0; i < 3; i++) { out_s[i] = 3 * t + i; } return out_s; }
+    public int[] t_circulate_r(int t) { var out_r = new int[3]; for (var i = 0; i < 3; i++) { out_r[i] = _triangles[3 * t + i]; } return out_r; }
+    public int[] t_circulate_t(int t) { var out_t = new int[3]; for (var i = 0; i < 3; i++) { out_t[i] = s_outer_t(3 * t + i); } return out_t; }
+    public int[] r_circulate_s(int r)
     {
         int s0 = _r_in_s[r];
         int incoming = s0;
@@ -155,7 +155,7 @@ partial class DualMesh
         return out_s.ToArray();
     }
 
-    int[] r_circulate_r(int r)
+    public int[] r_circulate_r(int r)
     {
         int s0 = _r_in_s[r];
         int incoming = s0;
@@ -169,7 +169,7 @@ partial class DualMesh
         return out_r.ToArray();
     }
 
-    int[] r_circulate_t(int r)
+    public int[] r_circulate_t(int r)
     {
         int s0 = _r_in_s[r];
         int incoming = s0;

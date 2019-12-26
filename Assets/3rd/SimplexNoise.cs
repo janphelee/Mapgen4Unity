@@ -2,7 +2,7 @@
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
-unsafe class SimplexNoise
+unsafe class SimplexNoise : IDisposable
 {
     // Skewing and unskewing factors for 2, 3, and 4 dimensions
     private static readonly double F2 = 0.5 * (Math.Sqrt(3.0) - 1.0);
@@ -420,5 +420,10 @@ unsafe class SimplexNoise
         }
         // Sum up and scale the result to cover the range [-1,1]
         return 27.0 * (n0 + n1 + n2 + n3 + n4);
+    }
+
+    public void Dispose()
+    {
+
     }
 }

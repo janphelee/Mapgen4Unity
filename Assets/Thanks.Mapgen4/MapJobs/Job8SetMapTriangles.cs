@@ -39,16 +39,16 @@ namespace Assets.MapJobs
             if (coast || s_flow[index] > 0 || s_flow[opposite_s] > 0)
             {
                 // It's a coastal or river edge, forming a valley
-                I[index * 3 + 0] = r1;
+                I[index * 3 + 2] = r1;
                 I[index * 3 + 1] = numRegions + t2;
-                I[index * 3 + 2] = numRegions + t1;
+                I[index * 3 + 0] = numRegions + t1;
             }
             else
             {
                 // It's a ridge
-                I[index * 3 + 0] = r1;
+                I[index * 3 + 2] = r1;
                 I[index * 3 + 1] = r2;
-                I[index * 3 + 2] = numRegions + t1;
+                I[index * 3 + 0] = numRegions + t1;
             }
         }
         private int s_inner_t(int s) { return s_to_t(s); }
