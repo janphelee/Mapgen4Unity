@@ -78,14 +78,14 @@ namespace Assets
                 var t31 = new int[count * 3];
                 //索引逆序
                 for (int i = 0; i < t31.Length; ++i) t31[i] = t31.Length - 1 - i;
-                waters.setup(v31, t31, v21, shaders[2]);
+                waters.setup(v31, v21, t31, shaders[2]);
                 // riverBitmap要开启mipmaps,且FilterMode.Trilinear
                 waters.setTexture("_rivertexturemap", riverBitmap);
 
                 var v32 = mapJobs.land_v3.ToArray();
                 var v22 = mapJobs.land_uv.ToArray();
                 var t32 = mapJobs.land_i.ToArray();
-                landzs.setup(v32, t32, v22, shaders[0]);
+                landzs.setup(v32, v22, t32, shaders[0]);
                 //texture = ColorMap.texture();
                 //saveToPng(texture as Texture2D, Application.streamingAssetsPath + "/colormap.png");
                 landzs.setTexture("_ColorMap", colorBitmap);
@@ -217,52 +217,6 @@ namespace Assets
         {
             config = cfg;
             genereate();
-        }
-
-
-
-        public void readTargetTexture(Camera camera, Texture2D output)
-        {
-            var currentRT = RenderTexture.active;
-            RenderTexture.active = camera.targetTexture;
-            output.ReadPixels(new Rect(0, 0, camera.targetTexture.width, camera.targetTexture.height), 0, 0);
-            output.Apply();
-
-            RenderTexture.active = currentRT;
-        }
-
-        // Take a "screenshot" of a camera's Render Texture.
-        public Texture2D renderTargetImage(Camera camera, Shader shader, string tag = "", FilterMode filterMode = FilterMode.Point, TextureWrapMode wrapMode = TextureWrapMode.Clamp)
-        {
-            // The Render Texture in RenderTexture.active is the one
-            // that will be read by ReadPixels.
-            var currentRT = RenderTexture.active;
-            RenderTexture.active = camera.targetTexture;
-
-            // Render the camera's view.
-            camera.RenderWithShader(shader, tag);
-
-            // Make a new texture and read the active Render Texture into it.
-            Texture2D image = new Texture2D(camera.targetTexture.width, camera.targetTexture.height, TextureFormat.RGBA32, false, false);
-            image.filterMode = filterMode;
-            image.wrapMode = wrapMode;
-            image.ReadPixels(new Rect(0, 0, camera.targetTexture.width, camera.targetTexture.height), 0, 0);
-            image.Apply();
-
-            // Replace the original active Render Texture.
-            RenderTexture.active = currentRT;
-            return image;
-        }
-
-        public void saveToPng(Texture2D texture, string path)
-        {
-            byte[] bytes = texture.EncodeToPNG();
-            FileStream file = File.Open(path, FileMode.Create);
-            BinaryWriter writer = new BinaryWriter(file);
-            writer.Write(bytes);
-            file.Close();
-
-            Debug.Log($"saveTo path:{path}");
         }
     }
 }

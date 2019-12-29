@@ -18,3 +18,5 @@ unity*.suo
 /Assets/Shaders/*.gl.meta
 /Assets/Shaders/*.bak
 /Assets/Shaders/*.bak.meta
+/Assets/StreamingAssets/*.txt
+/Assets/StreamingAssets/*.txt.meta

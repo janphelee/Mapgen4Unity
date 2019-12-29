@@ -25,6 +25,7 @@ class HashInt
         AA -= (AA << 3);
         AA ^= (AA << 10);
         AA ^= moveRight(AA, 15);
-        return AA & int.MaxValue;
+        //return AA & int.MaxValue;
+        return AA;
     }
 }

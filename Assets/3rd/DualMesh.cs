@@ -10,7 +10,7 @@ using Float = System.Single;
 using Float2 = Unity.Mathematics.float2;
 #endif
 
-partial class DualMesh
+public partial class DualMesh
 {
     public class Graph
     {
@@ -22,13 +22,13 @@ partial class DualMesh
     }
 
     /* Internals */
-    public NativeArray<int> _halfedges;// s_opposite_s
-    public NativeArray<int> _triangles;// s_begin_r
-    public NativeArray<Float2> _r_vertex;
+    public NativeArray<int> _halfedges { get; set; }// s_opposite_s
+    public NativeArray<int> _triangles { get; set; }// s_begin_r
+    public NativeArray<Float2> _r_vertex { get; set; }
 
-    public NativeArray<int> _r_in_s;
-    public NativeArray<Float2> _t_vertex;
-    public NativeArray<Float> s_length;
+    public NativeArray<int> _r_in_s { get; set; }
+    public NativeArray<Float2> _t_vertex { get; set; }
+    public NativeArray<Float> s_length { get; set; }
 
     public int numBoundaryRegions { get; private set; }
     public int numSides { get; private set; }//_triangles.Length;
@@ -74,6 +74,10 @@ partial class DualMesh
 
     private void _update()
     {
+        var _r_in_s = this._r_in_s;
+        var _t_vertex = this._t_vertex;
+        var s_length = this.s_length;
+
         // Construct an index for finding sides connected to a region
         for (var s = 0; s < _triangles.Length; s++)
         {
@@ -123,10 +127,10 @@ partial class DualMesh
 
     public Float r_x(int r) { return _r_vertex[r][0]; }
     public Float r_y(int r) { return _r_vertex[r][1]; }
-    public Float t_x(int t) { return _t_vertex[t][0]; }
-    public Float t_y(int t) { return _t_vertex[t][1]; }
-    public Float[] r_pos(int r) { var tmp = new Float[2]; tmp[0] = r_x(r); tmp[1] = r_y(r); return tmp; }
-    public Float[] t_pos(int t) { var tmp = new Float[2]; tmp[0] = t_x(t); tmp[1] = t_y(t); return tmp; }
+    //public Float t_x(int t) { return _t_vertex[t][0]; }
+    //public Float t_y(int t) { return _t_vertex[t][1]; }
+    //public Float[] r_pos(int r) { var tmp = new Float[2]; tmp[0] = r_x(r); tmp[1] = r_y(r); return tmp; }
+    //public Float[] t_pos(int t) { var tmp = new Float[2]; tmp[0] = t_x(t); tmp[1] = t_y(t); return tmp; }
 
     public int s_begin_r(int s) { return _triangles[s]; }
     public int s_end_r(int s) { return _triangles[s_next_s(s)]; }

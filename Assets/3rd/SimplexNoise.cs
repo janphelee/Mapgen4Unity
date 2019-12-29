@@ -73,44 +73,42 @@ unsafe class SimplexNoise : IDisposable
         return g.x * x + g.y * y + g.z * z + g.w * w;
     }
 
-    [NativeDisableUnsafePtrRestriction]
-    private byte* buffer;
 
-    private byte p256At(int i)
-    {
-        return buffer[i];
-    }
-    private byte permAt(int i)
-    {
-        return buffer[i + 256];
-    }
-    private byte permMod12At(int i)
-    {
-        return buffer[i + 256 + 512];
-    }
+    private NativeArray<byte> buffer { get; set; }
 
-    private void pSet(int i, byte b)
+    private byte* p256 { get; set; }//256
+    private byte* perm { get; set; }//512
+    private byte* permMod12 { get; set; }//512
+
+
+    public SimplexNoise(int seed)
     {
-        buffer[i] = b;
-    }
-    private void permSet(int i, byte b)
-    {
-        buffer[i + 256] = b;
-    }
-    private void permMod12Set(int i, byte b)
-    {
-        buffer[i + 256 + 512] = b;
+        buffer = new NativeArray<byte>(256 + 512 + 512, Allocator.Persistent);
+        create(seed, buffer);
     }
 
     public SimplexNoise(int seed, NativeArray<byte> buffer)
     {
-        this.buffer = (byte*)NativeArrayUnsafeUtility.GetUnsafePtr(buffer);
+        create(seed, buffer);
+    }
+
+    public void Dispose()
+    {
+        if (buffer != null) buffer.Dispose();
+    }
+
+    private void create(int seed, NativeArray<byte> buffer)
+    {
+        var p = (byte*)NativeArrayUnsafeUtility.GetUnsafePtr(buffer);
+        p256 = p;
+        perm = &p[256];
+        permMod12 = &perm[512];
 
         buildPermutationTable(seed);
         for (int i = 0; i < 512; i++)
         {
-            permSet(i, p256At(i & 255));
-            permMod12Set(i, (byte)(permAt(i) % 12));
+            perm[i] = p256[i & 255];
+            permMod12[i] = (byte)(perm[i] % 12);
         }
     }
 
@@ -119,17 +117,16 @@ unsafe class SimplexNoise : IDisposable
         int i;
         for (i = 0; i < 256; i++)
         {
-            pSet(i, (byte)i);
+            p256[i] = (byte)i;
         }
         for (i = 0; i < 255; i++)
         {
             var f = Rander.randFloat(seed, i);
             //  JS 中 ~~符号 它被用作一个更快的替代 Math.floor()
             var r = (byte)(i + Math.Floor(f * (256 - i)));
-            var aux = p256At(i);
-            // UnityEngine.Debug.Log($"i:{i} r:{r} f:{f}");
-            pSet(i, p256At(r));
-            pSet(r, aux);
+            var aux = p256[i];
+            p256[i] = p256[r];
+            p256[r] = aux;
         }
     }
 
@@ -167,9 +164,9 @@ unsafe class SimplexNoise : IDisposable
         // Work out the hashed gradient indices of the three simplex corners
         int ii = i & 255;
         int jj = j & 255;
-        int gi0 = permMod12At(ii + permAt(jj));
-        int gi1 = permMod12At(ii + i1 + permAt(jj + j1));
-        int gi2 = permMod12At(ii + 1 + permAt(jj + 1));
+        int gi0 = permMod12[ii + perm[jj]];
+        int gi1 = permMod12[ii + i1 + perm[jj + j1]];
+        int gi2 = permMod12[ii + 1 + perm[jj + 1]];
 
         // Calculate the contribution from the three corners
         double t0 = 0.5 - x0 * x0 - y0 * y0;
@@ -251,10 +248,10 @@ unsafe class SimplexNoise : IDisposable
         int ii = i & 255;
         int jj = j & 255;
         int kk = k & 255;
-        int gi0 = permMod12At(ii + permAt(jj + permAt(kk)));
-        int gi1 = permMod12At(ii + i1 + permAt(jj + j1 + permAt(kk + k1)));
-        int gi2 = permMod12At(ii + i2 + permAt(jj + j2 + permAt(kk + k2)));
-        int gi3 = permMod12At(ii + 1 + permAt(jj + 1 + permAt(kk + 1)));
+        int gi0 = permMod12[ii + perm[jj + perm[kk]]];
+        int gi1 = permMod12[ii + i1 + perm[jj + j1 + perm[kk + k1]]];
+        int gi2 = permMod12[ii + i2 + perm[jj + j2 + perm[kk + k2]]];
+        int gi3 = permMod12[ii + 1 + perm[jj + 1 + perm[kk + 1]]];
 
         // Calculate the contribution from the four corners
         double t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0;
@@ -376,11 +373,11 @@ unsafe class SimplexNoise : IDisposable
         int jj = j & 255;
         int kk = k & 255;
         int ll = l & 255;
-        int gi0 = permAt(ii + permAt(jj + permAt(kk + permAt(ll)))) % 32;
-        int gi1 = permAt(ii + i1 + permAt(jj + j1 + permAt(kk + k1 + permAt(ll + l1)))) % 32;
-        int gi2 = permAt(ii + i2 + permAt(jj + j2 + permAt(kk + k2 + permAt(ll + l2)))) % 32;
-        int gi3 = permAt(ii + i3 + permAt(jj + j3 + permAt(kk + k3 + permAt(ll + l3)))) % 32;
-        int gi4 = permAt(ii + 1 + permAt(jj + 1 + permAt(kk + 1 + permAt(ll + 1)))) % 32;
+        int gi0 = perm[ii + perm[jj + perm[kk + perm[ll]]]] % 32;
+        int gi1 = perm[ii + i1 + perm[jj + j1 + perm[kk + k1 + perm[ll + l1]]]] % 32;
+        int gi2 = perm[ii + i2 + perm[jj + j2 + perm[kk + k2 + perm[ll + l2]]]] % 32;
+        int gi3 = perm[ii + i3 + perm[jj + j3 + perm[kk + k3 + perm[ll + l3]]]] % 32;
+        int gi4 = perm[ii + 1 + perm[jj + 1 + perm[kk + 1 + perm[ll + 1]]]] % 32;
 
         // Calculate the contribution from the five corners
         double t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0 - w0 * w0;
@@ -420,10 +417,5 @@ unsafe class SimplexNoise : IDisposable
         }
         // Sum up and scale the result to cover the range [-1,1]
         return 27.0 * (n0 + n1 + n2 + n3 + n4);
-    }
-
-    public void Dispose()
-    {
-
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System;
+using Phevolution;
 
 #if Use_Double_Float
 using Float = System.Double;
@@ -11,21 +12,22 @@ using Float2 = Unity.Mathematics.float2;
 
 partial class DualMesh
 {
-    public static void makeSphere(int N, Float jitter, int seed, Action<DualMesh, List<Float>> callback)
+    public static void makeSphere(int N, double jitter, int seed, out DualMesh mesh, out List<double> d)
     {
         var latlong = generateFibonacciSphere(N, jitter, seed);
-
-        var r_xyz = new List<Float>();
+        //DebugHelper.SaveArray("generateFibonacciSphere.txt", latlong);
+        var r_xyz = new List<double>();
         for (var r = 0; r < latlong.Count / 2; r++)
         {
             pushCartesianFromSpherical(r_xyz, latlong[2 * r], latlong[2 * r + 1]);
         }
 
         var r_xy = stereographicProjection(r_xyz);
+        //DebugHelper.SaveArray("stereographicProjection.txt", r_xy);
         var delaunay = new Delaunator(r_xy.ToArray());
 
         /* TODO: rotate an existing point into this spot instead of creating one */
-        r_xyz.AddRange(new Float[] { 0, 0, 1 });
+        r_xyz.AddRange(new double[] { 0, 0, 1 });
         addSouthPoleToMesh(r_xyz.Count / 3 - 1, delaunay);
 
         var dummy_r_vertex = new Float2[N + 1];
@@ -35,7 +37,7 @@ partial class DualMesh
             dummy_r_vertex[i] = dummy_r_vertex[0];
         }
 
-        var mesh = new DualMesh(new Graph()
+        mesh = new DualMesh(new Graph()
         {
             numBoundaryRegions = 0,
             numSolidSides = delaunay.triangles.Length,
@@ -43,17 +45,17 @@ partial class DualMesh
             _triangles = delaunay.triangles,
             _halfedges = delaunay.halfedges,
         });
-        callback(mesh, r_xyz);
+        d = r_xyz;
     }
     /* calculate x,y,z from spherical coordinates lat,lon and then push
      * them onto out array; for one-offs pass [] as the first argument */
-    private static void pushCartesianFromSpherical(List<Float> r_xyz, Float latDeg, Float lonDeg)
+    private static void pushCartesianFromSpherical(List<double> r_xyz, double latDeg, double lonDeg)
     {
         var latRad = latDeg / 180.0 * Math.PI;
         var lonRad = lonDeg / 180.0 * Math.PI;
-        r_xyz.Add((Float)(Math.Cos(latRad) * Math.Cos(lonRad)));
-        r_xyz.Add((Float)(Math.Cos(latRad) * Math.Sin(lonRad)));
-        r_xyz.Add((Float)Math.Sin(latRad));
+        r_xyz.Add(Math.Cos(latRad) * Math.Cos(lonRad));
+        r_xyz.Add(Math.Cos(latRad) * Math.Sin(lonRad));
+        r_xyz.Add(Math.Sin(latRad));
     }
 
 
@@ -122,19 +124,19 @@ partial class DualMesh
         delaunator.halfedges = newHalfedges;
     }
 
-    private static List<Float> stereographicProjection(List<Float> r_xyz)
+    private static List<double> stereographicProjection(List<double> r_xyz)
     {
         // See <https://en.wikipedia.org/wiki/Stereographic_projection>
         //var degToRad = Math.PI / 180;
         var numPoints = r_xyz.Count / 3;
-        var r_XY = new List<Float>();
+        var r_XY = new List<double>();
         for (var r = 0; r < numPoints; r++)
         {
-            Float x = r_xyz[3 * r],
-                y = r_xyz[3 * r + 1],
-                z = r_xyz[3 * r + 2];
-            Float X = x / (1 - z),
-                Y = y / (1 - z);
+            double x = r_xyz[3 * r],
+                   y = r_xyz[3 * r + 1],
+                   z = r_xyz[3 * r + 2];
+            double X = x / (1 - z),
+                   Y = y / (1 - z);
 
             r_XY.Add(X);
             r_XY.Add(Y);
@@ -142,11 +144,11 @@ partial class DualMesh
         return r_XY;
     }
 
-    private static List<Float> generateFibonacciSphere(int N = 10000, Float jitter = 0.75f, int seed = 123)
+    private static List<double> generateFibonacciSphere(int N = 10000, double jitter = 0.75f, int seed = 123)
     {
-        var randFloat = Rander.makeRandFloat(seed);
+        var randFloat = Rander.makeRandDouble(seed);
 
-        var a_latlong = new List<Float>();
+        var a_latlong = new List<double>();
 
         // Second algorithm from http://web.archive.org/web/20120421191837/http://www.cgafaq.info/wiki/Evenly_distributed_points_on_sphere
         var s = 3.6 / Math.Sqrt(N);
@@ -166,8 +168,8 @@ partial class DualMesh
             latDeg += jitter * _randomLat * (latDeg - Math.Asin(Math.Max(-1, _z - dz * 2 * Math.PI * r / s)) * 180 / Math.PI);
             lonDeg += jitter * _randomLon * (s / r * 180 / Math.PI);
 
-            a_latlong.Add((Float)latDeg);
-            a_latlong.Add((Float)lonDeg % 360);
+            a_latlong.Add(latDeg);
+            a_latlong.Add(lonDeg % 360.0);
 
             _long += dlong;
             _z -= dz;

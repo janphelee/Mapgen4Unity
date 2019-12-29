@@ -264,7 +264,7 @@ namespace Assets
         public static Delaunator from(List<Float[]> points)
         {
             var n = points.Count;
-            var coords = new Float[n * 2];
+            var coords = new double[n * 2];
 
             for (var i = 0; i < n; i++)
             {

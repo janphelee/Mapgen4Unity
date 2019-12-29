@@ -100,7 +100,7 @@ namespace Assets
             renderers = new MeshRenderer[0];
         }
 
-        public void setup(Vector3[] vertices, int[] triangles, Vector2[] uv, Shader shader)
+        public void setup(Vector3[] vertices, Vector2[] uv, int[] triangles, Shader shader)
         {
             var vk1 = new List<int[]>();
             var vv3 = new List<Vector3[]>();

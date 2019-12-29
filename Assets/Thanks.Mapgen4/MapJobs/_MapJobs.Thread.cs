@@ -118,15 +118,5 @@ namespace Assets.MapJobs
             if (callback != null) callback.Invoke(watcher.ElapsedMilliseconds);
         }
         private bool debug() { return false; }
-
-        private void saveArray<T>(string fileName, NativeArray<T> d, int limit = int.MaxValue) where T : struct
-        {
-            var fileInfo = new FileInfo($"{Application.streamingAssetsPath}/{fileName}");
-            var streamWriter = fileInfo.CreateText();
-            for (var i = 0; i < d.Length && i < limit; ++i)
-                streamWriter.WriteLine($"{i} {d[i]}");
-            streamWriter.Close();
-            streamWriter.Dispose();
-        }
     }
 }

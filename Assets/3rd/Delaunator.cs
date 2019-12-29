@@ -1,19 +1,13 @@
 ﻿using System;
 using System.Linq;
 
-#if Use_Double_Float
-using Float = System.Double;
-#else
-using Float = System.Single;
-#endif
-
 /** - [Guide to data structures](https://mapbox.github.io/delaunator/) */
 class Delaunator
 {
-    private Float EPSILON = (Float)Math.Pow(2, -52);
+    private double EPSILON = Math.Pow(2, -52);
     private int[] EDGE_STACK = new int[512];
 
-    private Float[] coords;
+    private double[] coords;
     private int[] _triangles;
     private int[] _halfedges;
 
@@ -24,18 +18,18 @@ class Delaunator
     private int[] _hullTri;
 
     private int[] _ids;
-    private Float[] _dists;
+    private double[] _dists;
     private int _hullStart;
     private int trianglesLen;
 
-    private Float _cx { get; set; }
-    private Float _cy { get; set; }
+    private double _cx { get; set; }
+    private double _cy { get; set; }
 
     public int[] hull { get; set; }
     public int[] triangles { get; set; }
     public int[] halfedges { get; set; }
 
-    public Delaunator(Float[] coords)
+    public Delaunator(double[] coords)
     {
         var n = coords.Length >> 1;
         this.coords = coords;
@@ -55,7 +49,7 @@ class Delaunator
 
         // temporary arrays for sorting points
         this._ids = new int[n];
-        this._dists = new Float[n];
+        this._dists = new double[n];
 
         this.update();
     }
@@ -70,10 +64,10 @@ class Delaunator
         var n = coords.Length >> 1;
 
         // populate an array of point indices; calculate input data bbox
-        var minX = Float.PositiveInfinity;
-        var minY = Float.PositiveInfinity;
-        var maxX = Float.NegativeInfinity;
-        var maxY = Float.NegativeInfinity;
+        var minX = double.PositiveInfinity;
+        var minY = double.PositiveInfinity;
+        var maxX = double.NegativeInfinity;
+        var maxY = double.NegativeInfinity;
 
         for (var i = 0; i < n; i++)
         {
@@ -89,7 +83,7 @@ class Delaunator
         var cy = (minY + maxY) / 2;
         //UnityEngine.Debug.Log($"n:{n} min:{minX},{minY} max;{maxX},{maxY} cen:{cx},{cy}");
 
-        var minDist = Float.PositiveInfinity;
+        var minDist = double.PositiveInfinity;
         int i0 = 0, i1 = 0, i2 = 0;
 
         // pick a seed point close to the center
@@ -105,7 +99,7 @@ class Delaunator
         var i0x = coords[2 * i0];
         var i0y = coords[2 * i0 + 1];
 
-        minDist = Float.PositiveInfinity;
+        minDist = double.PositiveInfinity;
 
         // find the point closest to the seed
         for (var i = 0; i < n; i++)
@@ -121,7 +115,7 @@ class Delaunator
         var i1x = coords[2 * i1];
         var i1y = coords[2 * i1 + 1];
 
-        var minRadius = Float.PositiveInfinity;
+        var minRadius = double.PositiveInfinity;
 
         // find the third point which forms the smallest circumcircle with the first two
         for (var i = 0; i < n; i++)
@@ -137,7 +131,7 @@ class Delaunator
         var i2x = coords[2 * i2];
         var i2y = coords[2 * i2 + 1];
 
-        if (minRadius == Float.PositiveInfinity)
+        if (minRadius == double.PositiveInfinity)
         {
             // order collinear points by dx (or dy if all x are identical)
             // and return the list as a hull
@@ -151,7 +145,7 @@ class Delaunator
 
             var hull = new int[n];
             var j = 0;
-            Float d0 = Float.NegativeInfinity;
+            double d0 = double.NegativeInfinity;
             for (var i = 0; i < n; i++)
             {
                 var id = this._ids[i];
@@ -206,15 +200,15 @@ class Delaunator
         hullTri[i2] = 2;
 
         for (var i = 0; i < hullHash.Length; ++i) hullHash[i] = -1;
-        hullHash[this._hashKey(i0x, i0y)] = (int)i0;
-        hullHash[this._hashKey(i1x, i1y)] = (int)i1;
-        hullHash[this._hashKey(i2x, i2y)] = (int)i2;
+        hullHash[this._hashKey(i0x, i0y)] = i0;
+        hullHash[this._hashKey(i1x, i1y)] = i1;
+        hullHash[this._hashKey(i2x, i2y)] = i2;
 
         this.trianglesLen = 0;
         this._addTriangle(i0, i1, i2, -1, -1, -1);
 
-        Float xp = 0;
-        Float yp = 0;
+        double xp = 0;
+        double yp = 0;
         for (var k = 0; k < this._ids.Length; k++)
         {
             var i_8 = this._ids[k];
@@ -317,7 +311,7 @@ class Delaunator
         this.halfedges = this._halfedges.Take(trianglesLen).ToArray();
     }
 
-    private int _hashKey(Float x, Float y)
+    private int _hashKey(double x, double y)
     {
         return (int)Math.Floor(pseudoAngle(x - this._cx, y - this._cy) * this._hashSize) % this._hashSize;
     }
@@ -443,13 +437,13 @@ class Delaunator
     }
 
     // monotonically increases with real angle, but doesn't need expensive trigonometry
-    private static Float pseudoAngle(Float dx, Float dy)
+    private static double pseudoAngle(double dx, double dy)
     {
         var p = dx / (Math.Abs(dx) + Math.Abs(dy));
         return (dy > 0 ? 3 - p : 1 + p) / 4; // [0..1]
     }
 
-    private static Float dist(Float ax, Float ay, Float bx, Float by)
+    private static double dist(double ax, double ay, double bx, double by)
     {
         var dx = ax - bx;
         var dy = ay - by;
@@ -457,14 +451,14 @@ class Delaunator
     }
 
     // return 2d orientation sign if we're confident in it through J. Shewchuk's error bound check
-    private static Float orientIfSure(Float px, Float py, Float rx, Float ry, Float qx, Float qy)
+    private static double orientIfSure(double px, double py, double rx, double ry, double qx, double qy)
     {
         var l = (ry - py) * (qx - px);
         var r = (rx - px) * (qy - py);
         return (Math.Abs(l - r) >= 3.3306690738754716e-16 * Math.Abs(l + r)) ? l - r : 0;
     }
 
-    private static bool orient(Float rx, Float ry, Float qx, Float qy, Float px, Float py)
+    private static bool orient(double rx, double ry, double qx, double qy, double px, double py)
     {
         var sign = orientIfSure(px, py, rx, ry, qx, qy);
         if (sign == 0)
@@ -478,7 +472,7 @@ class Delaunator
         return sign < 0;
     }
 
-    private static bool inCircle(Float ax, Float ay, Float bx, Float by, Float cx, Float cy, Float px, Float py)
+    private static bool inCircle(double ax, double ay, double bx, double by, double cx, double cy, double px, double py)
     {
         var dx = ax - px;
         var dy = ay - py;
@@ -496,7 +490,7 @@ class Delaunator
                ap * (ex * fy - ey * fx) < 0;
     }
 
-    private static Float circumradius(Float ax, Float ay, Float bx, Float by, Float cx, Float cy)
+    private static double circumradius(double ax, double ay, double bx, double by, double cx, double cy)
     {
         var dx = bx - ax;
         var dy = by - ay;
@@ -510,10 +504,10 @@ class Delaunator
         var x = (ey * bl - dy * cl) * d;
         var y = (dx * cl - ex * bl) * d;
 
-        return (Float)(x * x + y * y);
+        return x * x + y * y;
     }
 
-    private static Float[] circumcenter(Float ax, Float ay, Float bx, Float by, Float cx, Float cy)
+    private static double[] circumcenter(double ax, double ay, double bx, double by, double cx, double cy)
     {
         var dx = bx - ax;
         var dy = by - ay;
@@ -527,10 +521,10 @@ class Delaunator
         var x = ax + (ey * bl - dy * cl) * d;
         var y = ay + (dx * cl - ex * bl) * d;
 
-        return new Float[] { (Float)x, (Float)y };
+        return new double[] { x, y };
     }
 
-    private static void quicksort(int[] ids, Float[] dists, int left, int right)
+    private static void quicksort(int[] ids, double[] dists, int left, int right)
     {
         if (right - left <= 20)
         {

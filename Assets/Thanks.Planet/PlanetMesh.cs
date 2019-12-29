@@ -5,33 +5,41 @@ namespace Thanks.Planet
 {
     public class PlanetMesh : MonoBehaviour
     {
-        private _MapJobs mapJobs { get; set; }
+        public _MapJobs mapJobs { get; private set; }
 
         private MeshSplit landzs { get; set; }
 
-        public int seed = 123;
-        public int N = 10000;
-        public int P = 20;
-        public float jitter = 0.75f;
-
         public Texture2D u_colormap;
+
+        private bool needUpdate { get; set; }
 
         void Start()
         {
             mapJobs = new _MapJobs();
-            mapJobs.generateMesh(N, P, jitter, seed);
+            mapJobs.processAsync(t => needUpdate = true);
 
-            var geo = mapJobs.geometry;
             landzs = MeshSplit.createMesh(transform, "map mesh");
-            landzs.setup(
-                geo.flat_xyz.ToArray(),
-                geo.flat_i.ToArray(),
-                geo.flat_em.ToArray(), Shader.Find("Thanks.Planet/PlanetLand"));
-            landzs.setTexture("u_colormap", u_colormap);
         }
         private void OnDestroy()
         {
             mapJobs.Dispose();
+        }
+
+        private void Update()
+        {
+            if (!needUpdate) return;
+            needUpdate = false;
+
+            var geo = mapJobs.geometry;
+            var shader = geo.quad ?
+                Shader.Find("Thanks.Planet/PlanetQuadLand") :
+                Shader.Find("Thanks.Planet/PlanetLand");
+            landzs.setup(
+                geo.flat_xyz.ToArray(),
+                geo.flat_em.ToArray(),
+                geo.flat_i.ToArray(), shader);
+            landzs.setShader(shader);
+            landzs.setTexture("u_colormap", u_colormap);
         }
     }
 }

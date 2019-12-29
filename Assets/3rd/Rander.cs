@@ -12,6 +12,7 @@ class Rander
 
     public delegate int RandInt(int N);
     public delegate Float RandFloat();
+    public delegate double RandDouble();
 
     public static RandInt makeRandInt(int seed)
     {
@@ -19,9 +20,9 @@ class Rander
         return (N) =>
         {
             i++;
-            var x = HashInt.hashInt(seed + i) % N;
+            var x = (uint)HashInt.hashInt(seed + i);
             // if (i < 101) UnityEngine.Debug.Log($"seed:{seed} i:{i} x:{x}");
-            return x;
+            return (int)(x % N);
         };
     }
 
@@ -31,6 +32,15 @@ class Rander
         return () =>
         {
             return rand(DIVISOR) / (Float)DIVISOR;
+        };
+    }
+
+    public static RandDouble makeRandDouble(int seed)
+    {
+        var rand = makeRandInt(seed);
+        return () =>
+        {
+            return rand(DIVISOR) / (double)DIVISOR;
         };
     }
 
