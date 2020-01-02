@@ -3,11 +3,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using UnityEngine;
 
-#if Use_Double_Float
-using Float2 = Unity.Mathematics.double2;
-#else
-using Float2 = Unity.Mathematics.float2;
-#endif
+using Float2 = UnityEngine.Vector2;
 
 namespace Assets.MapJobs
 {

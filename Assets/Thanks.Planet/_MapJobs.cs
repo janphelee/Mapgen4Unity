@@ -14,25 +14,6 @@ namespace Thanks.Planet
 {
     public partial class _MapJobs : JobThread, IDisposable
     {
-        public IChanged[] config { get; private set; }
-        public int vInt(int i) => ((ChangeI)config[i]).v;
-        public bool vBool(int i) => ((ChangeB)config[i]).v;
-        public float vFloat(int i) => ((ChangeF)config[i]).v;
-        public string vString(int i) => ((ChangeS)config[i]).v;
-
-        public _MapJobs()
-        {
-            config = new IChanged[] {
-                new ChangeI(0,/* seed */ 123, onConfig),
-                new ChangeI(1,/* N */ 10000, onConfig),
-                new ChangeI(2,/* P */ 20, onConfig),
-                new ChangeF(3,/* jitter */ 0.75f, onConfig),
-                new ChangeI(4,/* drawMode 0 flat/ 1 quad */ 0, onConfig),
-                new ChangeB(5,/* draw_plateVectors */ false, onConfig),
-                new ChangeB(6,/* draw_plateBoundaries */ false, onConfig),
-            };
-        }
-
         public DualMesh mesh { get; private set; }
 
         private NativeArray<double> r_xyz { get; set; }
@@ -62,6 +43,19 @@ namespace Thanks.Planet
 
         public Geometry geometry { get; private set; }
 
+
+        public _MapJobs()
+        {
+            config = new IChanged[] {
+                new ChangeI(0,/* seed */ 123, onConfig),
+                new ChangeI(1,/* N */ 10000, onConfig),
+                new ChangeI(2,/* P */ 20, onConfig),
+                new ChangeF(3,/* jitter */ 0.75f, onConfig),
+                new ChangeI(4,/* drawMode 0 flat/ 1 quad */ 0, onConfig),
+                new ChangeB(5,/* draw_plateVectors */ false, onConfig),
+                new ChangeB(6,/* draw_plateBoundaries */ false, onConfig),
+            };
+        }
 
         private void disposeMesh()
         {

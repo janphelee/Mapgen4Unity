@@ -2,16 +2,10 @@
 using System.Threading.Tasks;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
-using Unity.Mathematics;
 using UnityEngine;
 
-#if Use_Double_Float
-using Float = System.Double;
-using Float2 = Unity.Mathematics.double2;
-#else
 using Float = System.Single;
-using Float2 = Unity.Mathematics.float2;
-#endif
+using Float2 = UnityEngine.Vector2;
 
 namespace Assets.MapJobs
 {

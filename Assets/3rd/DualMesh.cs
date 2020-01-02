@@ -2,13 +2,8 @@
 using System.Collections.Generic;
 using Unity.Collections;
 
-#if Use_Double_Float
-using Float = System.Double;
-using Float2 = Unity.Mathematics.double2;
-#else
 using Float = System.Single;
-using Float2 = Unity.Mathematics.float2;
-#endif
+using Float2 = UnityEngine.Vector2;
 
 public partial class DualMesh
 {

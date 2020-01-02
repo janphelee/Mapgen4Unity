@@ -2,48 +2,57 @@
 using System;
 using System.Threading;
 
-public class JobThread
+namespace Phevolution
 {
-    protected bool working { get; private set; }
-    protected bool waitJob { get; private set; }
-
-    public void processAsync(Action<long> callback)
+    public class JobThread
     {
-        if (working)
+        public IChanged[] config { get; protected set; }
+        public int vInt(int i) => ((ChangeI)config[i]).v;
+        public bool vBool(int i) => ((ChangeB)config[i]).v;
+        public float vFloat(int i) => ((ChangeF)config[i]).v;
+        public string vString(int i) => ((ChangeS)config[i]).v;
+
+        protected bool working { get; private set; }
+        protected bool waitJob { get; private set; }
+
+        public void processAsync(Action<long> callback)
         {
-            waitJob = true;
-            return;
+            if (working)
+            {
+                waitJob = true;
+                return;
+            }
+
+            working = true;
+            waitJob = false;
+
+            new Thread(new ThreadStart(() =>
+            {
+                process(t =>
+                {
+                    callback(t);
+                    working = false;
+                    if (waitJob)
+                    {
+                        beforeNextJob();
+                        processAsync(callback);
+                    }
+                });
+            })).Start();
         }
 
-        working = true;
-        waitJob = false;
-
-        new Thread(new ThreadStart(() =>
+        protected virtual void beforeNextJob()
         {
-            process(t =>
-            {
-                callback(t);
-                working = false;
-                if (waitJob)
-                {
-                    beforeNextJob();
-                    processAsync(callback);
-                }
-            });
-        })).Start();
-    }
 
-    protected virtual void beforeNextJob()
-    {
+        }
 
-    }
+        protected virtual void process(Action<long> callback)
+        {
+            var watcher = new Stopwatch();
+            watcher.Start();
 
-    protected virtual void process(Action<long> callback)
-    {
-        var watcher = new Stopwatch();
-        watcher.Start();
-
-        watcher.Stop();
-        if (callback != null) callback.Invoke(watcher.ElapsedMilliseconds);
+            watcher.Stop();
+            if (callback != null) callback.Invoke(watcher.ElapsedMilliseconds);
+        }
     }
 }

@@ -1,16 +1,8 @@
-﻿using System;
-using Unity.Collections;
+﻿using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
-using Unity.Mathematics;
 
-#if Use_Double_Float
-using Float = System.Double;
-using Float2 = Unity.Mathematics.double2;
-#else
 using Float = System.Single;
-using Float2 = Unity.Mathematics.float2;
-#endif
 
 namespace Assets.MapJobs
 {

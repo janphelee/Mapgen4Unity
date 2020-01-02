@@ -61,7 +61,7 @@ namespace Phevolution
             streamWriter.Close();
             streamWriter.Dispose();
         }
-        public static void SaveArray<T>(string fileName, T[] d, int limit = int.MaxValue) where T : struct
+        public static void SaveArray<T>(string fileName, T[] d, int limit = int.MaxValue)
         {
             var fileInfo = new FileInfo($"{Application.streamingAssetsPath}/{fileName}");
             var streamWriter = fileInfo.CreateText();
@@ -70,11 +70,11 @@ namespace Phevolution
             streamWriter.Close();
             streamWriter.Dispose();
         }
-        public static void SaveArray<T>(string fileName, List<T> d, int limit = int.MaxValue) where T : struct
+        public static void SaveArray<T>(string fileName, List<T> d, int limit = int.MaxValue)
         {
             SaveArray(fileName, d.ToArray(), limit);
         }
-        public static void SaveArray<T>(string fileName, HashSet<T> d, int limit = int.MaxValue) where T : struct
+        public static void SaveArray<T>(string fileName, HashSet<T> d, int limit = int.MaxValue)
         {
             var fileInfo = new FileInfo($"{Application.streamingAssetsPath}/{fileName}");
             var streamWriter = fileInfo.CreateText();
@@ -88,6 +88,39 @@ namespace Phevolution
             streamWriter.Dispose();
         }
 
+        public static void SaveArray<T>(string fileName, T[][] d, int limit = int.MaxValue)
+        {
+            var fileInfo = new FileInfo($"{Application.streamingAssetsPath}/{fileName}");
+            var streamWriter = fileInfo.CreateText();
+            for (var i = 0; i < d.Length && i < limit; ++i)
+                streamWriter.WriteLine($"{i} {toString(d[i])}");
+            streamWriter.Close();
+            streamWriter.Dispose();
+
+        }
+
+        public static void SaveArray(string fileName, List<double[]> d, int limit = int.MaxValue)
+        {
+            var fileInfo = new FileInfo($"{Application.streamingAssetsPath}/{fileName}");
+            var streamWriter = fileInfo.CreateText();
+            for (var i = 0; i < d.Count && i < limit; ++i)
+                streamWriter.WriteLine($"{i} {d[i][0]},{d[i][1]}");
+            streamWriter.Close();
+            streamWriter.Dispose();
+        }
+
+        public static string toString<T>(T[] d)
+        {
+            if (d == null) return null;
+
+            string s = "";
+            for (int i = 0; i < d.Length - 1; ++i)
+            {
+                s += $"{d[i]},";
+            }
+            s += d[d.Length - 1];
+            return s;
+        }
     }
 
 }

@@ -48,8 +48,8 @@ namespace Assets
             for (int i = 0; i < data.points.Length; ++i)
             {
                 var p = data.points[i];
-                points[i * 2 + 0] = (short)p.x;
-                points[i * 2 + 1] = (short)p.y;
+                points[i * 2 + 0] = (short)p[0];
+                points[i * 2 + 1] = (short)p[1];
             }
             var peaks_index = new short[data.peaks.Length];
             for (int i = 0; i < data.peaks.Length; ++i)

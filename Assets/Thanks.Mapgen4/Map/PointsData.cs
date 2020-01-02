@@ -1,11 +1,9 @@
 ﻿using System;
 using System.IO;
-using Unity.Mathematics;
 
 namespace Assets
 {
-    using Half = half;
-    using Half2 = half2;
+    using UInt16 = UInt16;
 
     public class PointsData
     {
@@ -24,15 +22,15 @@ namespace Assets
             Buffer.BlockCopy(bytes, 0, data, 0, ret);
 
             var numPeaks = data[0];
-            var peaks = new Half[numPeaks];
+            var peaks = new UInt16[numPeaks];
             Array.Copy(data, 1, peaks, 0, numPeaks);
 
             var numPoints = (data.Length - 1 - numPeaks) / 2;
-            var points = new Half2[numPoints];
+            var points = new UInt16[numPoints][];
             for (int i = 0; i < numPoints; i++)
             {
                 var j = 1 + numPeaks + i * 2;
-                points[i] = new Half2((Half)data[j], (Half)data[j + 1]);
+                points[i] = new UInt16[] { (UInt16)data[j], (UInt16)data[j + 1] };
             }
 
             var pd = new PointsData()
@@ -42,11 +40,11 @@ namespace Assets
             };
         }
 
-        public Half numMountainPeaks { get { return (Half)peaks.Length; } }
-        public Half[] peaks { get; private set; }
+        public UInt16 numMountainPeaks { get { return (UInt16)peaks.Length; } }
+        public UInt16[] peaks { get; private set; }
 
-        public Half numRegionPoints { get { return (Half)points.Length; } }
-        public Half2[] points { get; private set; }
+        public UInt16 numRegionPoints { get { return (UInt16)points.Length; } }
+        public UInt16[][] points { get; private set; }
 
         private PointsData()
         {
@@ -74,15 +72,15 @@ namespace Assets
             }
             Array.Sort(tmpPoints, indexs);
 
-            points = new Half2[tmpPoints.Length];
-            peaks = new Half[poissonPeaks.Count];
+            points = new UInt16[tmpPoints.Length][];
+            peaks = new UInt16[poissonPeaks.Count];
 
             int count = 0;
             for (int i = 0; i < indexs.Length; ++i)
             {
                 var p = tmpPoints[i];
-                points[i] = new Half2((Half)((p >> 16) & 0xffff), (Half)(p & 0xffff));
-                if (indexs[i] < peaks.Length) peaks[count++] = (Half)i;
+                points[i] = new UInt16[] { (UInt16)((p >> 16) & 0xffff), (UInt16)(p & 0xffff) };
+                if (indexs[i] < peaks.Length) peaks[count++] = (UInt16)i;
             }
         }
     }

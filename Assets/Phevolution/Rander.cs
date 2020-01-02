@@ -1,4 +1,4 @@
-﻿using Unity.Collections;
+﻿using System;
 
 #if Use_Double_Float
 using Float = System.Double;
@@ -6,9 +6,9 @@ using Float = System.Double;
 using Float = System.Single;
 #endif
 
-class Rander
+public class Rander
 {
-    const int DIVISOR = 0x10000000;
+    public const int DIVISOR = 0x10000000;
 
     public delegate int RandInt(int N);
     public delegate Float RandFloat();
@@ -64,12 +64,31 @@ class Rander
         }
     }
 
-    public static void randArray(int seed, int index, NativeArray<Float> buffer)
+
+    private RandInt random { get; set; }
+
+    public Rander() : this(0) { }
+    public Rander(int Seed)
     {
-        for (int i = 0; i < buffer.Length; ++i)
-        {
-            buffer[i] = randFloat(seed, index + i);
-        }
+        random = makeRandInt(Seed);
+    }
+
+    public int Next()
+    {
+        return random(DIVISOR);
+    }
+    public int Next(int maxValue)
+    {
+        return random(maxValue);
+    }
+    public int Next(int minValue, int maxValue)
+    {
+        var n = (maxValue - minValue) * NextDouble() + minValue;
+        return (int)Math.Floor(n);
+    }
+    public double NextDouble()
+    {
+        return (double)random(DIVISOR) / DIVISOR;
     }
 
 }
