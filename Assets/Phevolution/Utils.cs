@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Phevolution
 {
@@ -58,6 +59,46 @@ namespace Phevolution
             var ret = d[d.Count - 1];
             d.RemoveAt(d.Count - 1);
             return ret;
+        }
+
+        public static float angle(float x0, float y0, float x1, float y1)
+        {
+            var p1 = new Vector2(x0, y0).normalized;
+            var p2 = new Vector2(x1, y1).normalized;
+
+            var aa = angle(p1, p2);
+            var cc = Vector3.Cross(p1, p2).z < 0;
+            if (cc) aa = 360 - aa;//反向旋转角度
+            return aa;
+        }
+
+        public static float angle(Vector2 p1, Vector2 p2)
+        {
+            var ret = Mathf.Acos(Vector2.Dot(p1, p2)) * Mathf.Rad2Deg;
+            //Debug.Log($"angle {p1} {p2} ret:{ret}");
+            return ret;
+        }
+
+        // Array.Sort 为不稳定排序
+        public static void InsertionSort<T>(IList<T> list, Comparison<T> comparison)
+        {
+            if (list == null)
+                throw new ArgumentNullException("list");
+            if (comparison == null)
+                throw new ArgumentNullException("comparison");
+
+            int count = list.Count;
+            for (int j = 1; j < count; j++)
+            {
+                T key = list[j];
+
+                int i = j - 1;
+                for (; i >= 0 && comparison(list[i], key) > 0; i--)
+                {
+                    list[i + 1] = list[i];
+                }
+                list[i + 1] = key;
+            }
         }
     }
 }

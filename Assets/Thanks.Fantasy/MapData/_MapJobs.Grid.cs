@@ -74,7 +74,7 @@ namespace Thanks.Fantasy
                 return cells.v[i].Select(v => vertices.p[v]).ToArray();
             }
 
-            public double[][] getFeaturePoints(int f)
+            public IList<double[]> getFeaturePoints(int f)
             {
                 var ff = features[f];
                 if (ff == null) return null;
@@ -82,7 +82,7 @@ namespace Thanks.Fantasy
                 var vchain = ff.vertices;
                 if (vchain == null) return null;
 
-                return vchain.Select(v => vertices.p[v]).ToArray();
+                return vchain.Select(v => vertices.p[v]).ToList();
             }
         }
     }

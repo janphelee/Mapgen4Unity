@@ -1,14 +1,12 @@
 ﻿using UnityEngine;
-using Phevolution;
-using Random = Phevolution.Random;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
+using Debug = UnityEngine.Debug;
 
 namespace Thanks.Fantasy
 {
     public class FantasyMesh : MonoBehaviour
     {
-
         public _MapJobs mapJobs { get; private set; }
         private bool needRender { get; set; }
 
@@ -24,27 +22,23 @@ namespace Thanks.Fantasy
             if (!needRender) return;
             needRender = !needRender;
 
-            var ff = mapJobs.pack.features;
-            for (var i = 0; i < ff.Length; ++i)
+            var w = new Stopwatch();
+            w.Start();
+
+            var local = Vector3.zero;
+            foreach (var geom in mapJobs.heightmap)
             {
-                var points = mapJobs.pack.getFeaturePoints(i);
-                if (points == null) continue;
+                var obj = new GameObject(geom.name);
+                obj.transform.SetParent(transform);
+                obj.AddComponent<PolygonMesh>().SetPositions(geom.ppp, geom.iii, geom.color);
 
-                var v3 = new List<Vector3>();
-                foreach (var p in points)
-                {
-                    v3.Add(new Vector3((float)p[0], 0, (float)p[1]));
-                }
-
-                var line = new GameObject($"feature_{i}_{v3.Count}");
-                line.transform.SetParent(transform);
-                var render = line.AddComponent<LineRenderer>();
-                render.positionCount = v3.Count;
-                render.SetPositions(v3.ToArray());
-                render.startWidth = 0.5f;
-                render.endWidth = 0.5f;
-                render.loop = true;
+                obj.transform.localPosition = local;
+                local.z -= 0.1f;
             }
+
+            Debug.Log($"fillmesh {w.ElapsedMilliseconds}ms");
+
+            w.Stop();
         }
 
         public readonly List<int> elapsedMs = new List<int>();

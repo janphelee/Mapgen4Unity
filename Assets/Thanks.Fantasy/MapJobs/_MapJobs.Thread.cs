@@ -1,10 +1,6 @@
 ﻿using Phevolution;
 using System;
 using System.Collections.Generic;
-
-using static Phevolution.Utils;
-using static Phevolution.PointsSelection;
-using Random = Phevolution.Random;
 using System.IO;
 using UnityEngine;
 using System.Linq;
@@ -12,6 +8,10 @@ using System.Diagnostics;
 
 namespace Thanks.Fantasy
 {
+    using static Phevolution.Utils;
+    using static Phevolution.PointsSelection;
+    using Random = Phevolution.Random;
+
     public partial class _MapJobs
     {
 
@@ -85,6 +85,10 @@ namespace Thanks.Fantasy
 
             new Map4Coastline(this).drawCoastline();
 
+            UnityEngine.Debug.Log($"process:{watcher.ElapsedMilliseconds}ms ");
+
+            generate();
+            UnityEngine.Debug.Log($"generate:{watcher.ElapsedMilliseconds}ms ");
 
             watcher.Stop();
             callback?.Invoke(watcher.ElapsedMilliseconds);
@@ -148,6 +152,7 @@ namespace Thanks.Fantasy
                 cells.area = // cell area
                     cells.i.Select(i => (ushort)Math.Abs(D3.polygonArea(pack.getGridPolygon(i)))).ToArray();
 
+                //DebugHelper.SaveArray("pack.cells.i.txt", cells.i);
                 //DebugHelper.SaveArray("pack.cells.h.txt", cells.h);
                 //DebugHelper.SaveArray("pack.cells.c.txt", cells.c);
             }

@@ -30,7 +30,7 @@ namespace Thanks.Fantasy
         // Detect and draw the coasline
         public void drawCoastline()
         {
-            //var msg = new List<string>();
+            var msg = new List<string>();
 
             var features = pack.features;
             var used = new byte[features.Length];
@@ -55,7 +55,8 @@ namespace Thanks.Fantasy
                 used[f] = 1;
                 var points = vchain.Select(v => vertices.p[v]).ToArray();
                 var area = D3.polygonArea(points); // area with lakes/islands
-                if (area > 0 && features[f].type == "lake")
+                //if (area > 0 && features[f].type == "lake")
+                if (area < 0)// area < 0 顺时针多边形 area > 0 逆时针多边形
                 {
                     points = points.Reverse().ToArray();
                     vchain = vchain.Reverse().ToArray();
@@ -67,9 +68,10 @@ namespace Thanks.Fantasy
 
                 features[f].area = Math.Abs(area);
                 features[f].vertices = vchain;
-
+                msg.Add(DebugHelper.toString(vchain));
             }
             //DebugHelper.SaveArray("drawCoastline.txt", msg);
+            DebugHelper.SaveArray("vchain.txt", msg);
         }
 
 
